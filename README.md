@@ -36,12 +36,15 @@ experiments/           append-only experiment log
 notebooks/             Colab/VS Code training notebook
 reports/dataset/       generated validation report and image review CSV
 tests/                 AI/data pipeline tests
+knowledge_graph/       optional Neo4j taxonomy and prediction layer
 ```
 
 `dataset_tools.py`, `train_model.py`, `predictor.py`, `severity.py`, and
 `activate_model.py` are the canonical data, training, inference, severity, and
-model-selection modules. Backend, frontend, risk-engine, Graph, USSD, and IVR
-applications are not part of this AI workspace.
+model-selection modules. `knowledge_graph/` contains an optional Neo4j
+knowledge layer; the default predictor and training pipeline remain
+independent of it. Backend, frontend, risk-engine, USSD, and IVR applications
+are not part of this AI workspace.
 
 ## Install
 
@@ -57,6 +60,12 @@ python -m pip install -r requirements.txt
 The root requirements provide TensorFlow/Keras, NumPy, and Pillow. Training
 downloads MobileNetV2 ImageNet weights on first use if they are not cached, so
 that first training run needs network access.
+
+Neo4j is not required for the classifier. To use the optional graph layer,
+install [requirements-neo4j.txt](./requirements-neo4j.txt) separately and
+follow [knowledge_graph/README.md](./knowledge_graph/README.md). The high-level
+responsibilities and data flow are described in
+[AI_ARCHITECTURE.md](./AI_ARCHITECTURE.md).
 
 ## Prepare and check the dataset
 

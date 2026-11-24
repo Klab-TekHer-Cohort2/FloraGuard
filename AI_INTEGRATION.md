@@ -74,3 +74,27 @@ No rose dataset or trained model is currently included. Severity is a
 prototype visual-coverage estimate, not an expert-validated diagnosis.
 Image classification only identifies what is visible in a photograph; it does
 not calculate community or area-level risk.
+
+## Optional Neo4j knowledge layer
+
+The standard `predict_image()` contract above does not connect to Neo4j and
+continues to work without graph dependencies or credentials. If graph storage
+and enrichment are needed, install the separate optional dependency file and
+use `knowledge_graph.integration.predict_image_with_knowledge()`; it returns
+the same AI result under `prediction`, plus `knowledge_status` and optional
+graph data. Neo4j failure does not discard an otherwise successful AI result.
+
+Configure `NEO4J_URI`, `NEO4J_USERNAME`, and `NEO4J_PASSWORD` in the process
+environment (and optionally `NEO4J_DATABASE`). The [knowledge graph guide](./knowledge_graph/README.md)
+documents installation, Aura/local connection checks, schema setup, and the
+seed scope. The seed contains only project class names and prediction severity
+values; it does not invent symptoms, treatments, field observations, or
+environmental claims.
+
+```python
+from knowledge_graph.integration import predict_image_with_knowledge
+
+result = predict_image_with_knowledge(saved_image_path)
+prediction = result["prediction"]
+knowledge_status = result["knowledge_status"]
+```
