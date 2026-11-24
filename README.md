@@ -22,6 +22,27 @@ visual-coverage estimate until expert-labelled severity data is available.
 See [DATASET.md](./DATASET.md) for collection/provenance requirements and
 [AI_INTEGRATION.md](./AI_INTEGRATION.md) for the predictor contract.
 
+## AI/Data workspace layout
+
+This repository itself is the AI/Data workspace; the reusable implementations
+remain at the root rather than being duplicated under another `ai_ml/src`
+tree:
+
+```text
+data/rose/source/      genuine labelled source images (currently empty)
+data/rose/             source manifest and generated group-aware split manifest
+models/                versioned model and evaluation outputs (currently empty)
+experiments/           append-only experiment log
+notebooks/             Colab/VS Code training notebook
+reports/dataset/       generated validation report and image review CSV
+tests/                 AI/data pipeline tests
+```
+
+`dataset_tools.py`, `train_model.py`, `predictor.py`, `severity.py`, and
+`activate_model.py` are the canonical data, training, inference, severity, and
+model-selection modules. Backend, frontend, risk-engine, Graph, USSD, and IVR
+applications are not part of this AI workspace.
+
 ## Install
 
 Use Python supported by TensorFlow (the current project targets Python 3.11):
@@ -120,6 +141,21 @@ angle, background, or a class with too few examples). The pipeline does not
 guess a cause. Do not quote results until they have been produced from the
 project's own reviewed test data.
 
+Every successful run appends its configuration and measured validation/test
+metrics to `experiments/experiments.jsonl`; it never replaces prior records. See
+[MODEL.md](./MODEL.md) for the architecture and
+[TRAINING.md](./TRAINING.md) for the end-to-end workflow.
+
+Optional second-stage fine-tuning unfreezes up to 30 upper MobileNetV2 layers,
+keeps Batch Normalization frozen, and uses Adam at `1e-5` by default. It runs
+only when `--fine-tune-epochs` is greater than zero, and its checkpoint is
+selected only if validation loss improves over the frozen-head checkpoint.
+For example:
+
+```powershell
+python train_model.py --data-dir data/rose --output-dir models --manifest data/rose/split_manifest.csv --version v2 --dataset-version rose-data-1 --seed 42 --epochs 30 --batch-size 32 --learning-rate 0.001 --fine-tune-epochs 10 --fine-tune-layers 30 --fine-tune-learning-rate 0.00001
+```
+
 Review the artifacts, then activate the version explicitly without retraining:
 
 ```powershell
@@ -190,6 +226,12 @@ python test_predictor.py
 
 It reports the selected image, problem, confidence, severity, and model version.
 It fails clearly if the split manifest or active trained model is missing.
+
+The optional reusable training notebook is
+[notebooks/train_floraguard.ipynb](./notebooks/train_floraguard.ipynb). It
+orchestrates the same scripts, including validation, split, training, evaluation
+review, activation, smoke testing, and optional Colab artifact download; it
+does not contain sample data or a duplicate model implementation.
 
 ## CPU, GPU, and Google Colab
 

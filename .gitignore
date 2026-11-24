@@ -14,3 +14,6 @@ models/*_metadata.json
 models/*_evaluation.json
 models/*_confusion_matrix.png
 models/*_incorrect_predictions.csv
+reports/dataset/dataset_validation.json
+reports/dataset/image_review.csv
+notebooks/.ipynb_checkpoints/
