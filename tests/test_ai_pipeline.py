@@ -250,6 +250,61 @@ def test_dataset_validation_reports_corruption_duplicates_and_counts(tmp_path):
     assert image_path.is_file()
 
 
+def test_split_reports_empty_source_and_empty_manifest_actionably(tmp_path):
+    data_dir = tmp_path / "rose"
+    source_dir = data_dir / "source"
+    for class_name in CLASS_NAMES:
+        (source_dir / class_name).mkdir(parents=True)
+    manifest = data_dir / "source_manifest.csv"
+    manifest.write_text(
+        "path,source_type,source_name,license,source_url,group_id,review_status\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError) as error:
+        dataset_tools.create_split_manifest(
+            data_dir,
+            source_dir,
+            manifest,
+            data_dir / "split_manifest.csv",
+            seed=42,
+        )
+
+    message = str(error.value)
+    assert str(source_dir) in message
+    assert "found 0 valid image(s) among 0 reviewed file(s)" in message
+    assert "Source manifest has 0 image rows" in message
+    assert ".jpg, .jpeg, .png, and .webp" in message
+    assert "healthy, spider_mite, thrips" in message
+
+
+def test_split_rejects_directory_as_source_manifest(tmp_path):
+    data_dir = tmp_path / "rose"
+    source_dir = data_dir / "source"
+    for class_name in CLASS_NAMES:
+        (source_dir / class_name).mkdir(parents=True)
+
+    with pytest.raises(ValueError, match="--source-manifest points to a directory"):
+        dataset_tools.create_split_manifest(
+            data_dir,
+            source_dir,
+            data_dir,
+            data_dir / "split_manifest.csv",
+            seed=42,
+        )
+
+
+def test_training_rejects_empty_split_manifest_and_missing_directories(tmp_path):
+    manifest = tmp_path / "split_manifest.csv"
+    manifest.write_text("path,class_name,group_id,split\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="contains no image rows"):
+        train_model.read_split_manifest(manifest, tmp_path)
+
+    with pytest.raises(FileNotFoundError, match="Prepare a group-aware split manifest"):
+        train_model._directory_records(tmp_path / "rose")
+
+
 def test_group_aware_split_is_reproducible_and_keeps_each_group_together(tmp_path):
     data_dir = tmp_path / "data"
     source_dir = data_dir / "source"

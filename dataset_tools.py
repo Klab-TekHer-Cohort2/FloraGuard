@@ -3,6 +3,7 @@ import csv
 import hashlib
 import json
 import random
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -20,6 +21,7 @@ CLASS_NAMES = (
 )
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
 SPLIT_FRACTIONS = {"train": 0.70, "validation": 0.15, "test": 0.15}
+PROJECT_DIR = Path(__file__).resolve().parent
 
 
 def _class_for_path(path: Path) -> str | None:
@@ -274,12 +276,49 @@ def create_split_manifest(
     seed: int,
 ) -> dict:
     data_dir = data_dir.resolve()
-    source_dir = source_dir.resolve()
-    entries = _read_source_manifest(data_dir, source_manifest.resolve())
-    if not entries:
-        raise ValueError(f"No images are listed in {source_manifest}")
+    source_dir = source_dir.expanduser().resolve()
+    source_manifest = source_manifest.expanduser().resolve()
+    expected_classes = ", ".join(CLASS_NAMES)
+    if not source_dir.is_dir():
+        raise FileNotFoundError(
+            f"Source image directory not found: {source_dir}. Expected folders "
+            f"for these classes: {expected_classes}."
+        )
 
     validation_report, inspected = validate_dataset(source_dir)
+    valid_image_count = validation_report["valid_images"]
+    if source_manifest.is_dir():
+        manifest_status = (
+            f"--source-manifest points to a directory, not a CSV file: "
+            f"{source_manifest}. Pass a file such as "
+            f"{data_dir / 'source_manifest.csv'}."
+        )
+        entries = []
+    elif not source_manifest.is_file():
+        manifest_status = (
+            f"Source manifest CSV not found: {source_manifest}. Create it with "
+            "one provenance row per source image."
+        )
+        entries = []
+    else:
+        entries = _read_source_manifest(data_dir, source_manifest)
+        manifest_status = (
+            f"Source manifest has 0 image rows: {source_manifest}."
+            if not entries
+            else ""
+        )
+
+    if valid_image_count == 0 or not entries:
+        raise ValueError(
+            "Cannot create a dataset split. "
+            f"Looked in {source_dir}; found {valid_image_count} valid image(s) "
+            f"among {validation_report['total_files_reviewed']} reviewed file(s). "
+            "Accepted formats are .jpg, .jpeg, .png, and .webp, stored under "
+            f"one of these class folders: {expected_classes}. "
+            f"{manifest_status} Add genuine images and complete the CSV fields "
+            "path, source_type, source_name, license, source_url, group_id, "
+            "and review_status before splitting."
+        )
     if any(record["status"] != "ok" for record in inspected):
         invalid_count = sum(record["status"] != "ok" for record in inspected)
         raise ValueError(
@@ -519,22 +558,38 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     validate_parser = subparsers.add_parser("validate")
-    validate_parser.add_argument("--data-dir", type=Path, default=Path("data/rose/source"))
-    validate_parser.add_argument("--output-dir", type=Path, default=Path("reports/dataset"))
+    validate_parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=PROJECT_DIR / "data" / "rose" / "source",
+    )
+    validate_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=PROJECT_DIR / "reports" / "dataset",
+    )
     validate_parser.add_argument("--blur-threshold", type=float, default=10.0)
 
     split_parser = subparsers.add_parser("split")
-    split_parser.add_argument("--data-dir", type=Path, default=Path("data/rose"))
-    split_parser.add_argument("--source-dir", type=Path, default=Path("data/rose/source"))
+    split_parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=PROJECT_DIR / "data" / "rose",
+    )
+    split_parser.add_argument(
+        "--source-dir",
+        type=Path,
+        default=PROJECT_DIR / "data" / "rose" / "source",
+    )
     split_parser.add_argument(
         "--source-manifest",
         type=Path,
-        default=Path("data/rose/source_manifest.csv"),
+        default=PROJECT_DIR / "data" / "rose" / "source_manifest.csv",
     )
     split_parser.add_argument(
         "--output",
         type=Path,
-        default=Path("data/rose/split_manifest.csv"),
+        default=PROJECT_DIR / "data" / "rose" / "split_manifest.csv",
     )
     split_parser.add_argument("--seed", type=int, default=42)
 
@@ -556,4 +611,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (OSError, ValueError) as error:
+        print(f"Dataset operation failed: {error}", file=sys.stderr)
+        raise SystemExit(2) from error

@@ -32,12 +32,19 @@ def _tensorflow():
 
 def class_directories(split_dir: Path) -> list[str]:
     if not split_dir.is_dir():
-        raise FileNotFoundError(f"Dataset split directory not found: {split_dir}")
+        raise FileNotFoundError(
+            f"Dataset split directory not found: {split_dir}. Prepare a "
+            "group-aware split manifest with dataset_tools.py or provide "
+            "train, validation, and test directories."
+        )
     classes = sorted(path.name for path in split_dir.iterdir() if path.is_dir())
     if tuple(classes) != tuple(sorted(CLASS_NAMES)):
+        missing = sorted(set(CLASS_NAMES) - set(classes))
+        unexpected = sorted(set(classes) - set(CLASS_NAMES))
         raise ValueError(
-            f"{split_dir} must contain exactly these class folders: "
-            f"{', '.join(CLASS_NAMES)}"
+            f"{split_dir} must contain exactly the seven required class "
+            f"folders. Missing: {missing or 'none'}; unexpected: "
+            f"{unexpected or 'none'}."
         )
     return list(CLASS_NAMES)
 
@@ -92,6 +99,12 @@ def read_split_manifest(
                 (str(image_path), class_to_index[class_name], group_id)
             )
 
+    if not any(by_split.values()):
+        raise ValueError(
+            f"Split manifest contains no image rows: {manifest_path}. "
+            "Validate the source images and create a split manifest first."
+        )
+
     for split in SPLITS:
         labels = {label for _, label, _ in by_split[split]}
         missing = [name for index, name in enumerate(CLASS_NAMES) if index not in labels]
@@ -115,7 +128,11 @@ def _directory_records(data_dir: Path) -> dict[str, list[tuple[str, int, str]]]:
                 if path.is_file() and path.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}
             )
             if not image_paths:
-                raise ValueError(f"No images found for {class_name} in {split_dir}")
+                raise ValueError(
+                    f"No supported images found for class {class_name!r} in "
+                    f"{split_dir}. Accepted formats are .jpg, .jpeg, .png, "
+                    "and .webp."
+                )
             records.extend((str(path.resolve()), label, str(path.resolve())) for path in image_paths)
         result[split] = records
     return result
