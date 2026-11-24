@@ -1,1 +1,0 @@
-"""FloraGuard backend application."""
