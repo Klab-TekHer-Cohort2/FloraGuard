@@ -17,6 +17,7 @@ DEFAULT_DATA_DIR = PROJECT_DIR / "data" / "rose"
 DEFAULT_OUTPUT_DIR = PROJECT_DIR / "models"
 IMAGE_SIZE = (224, 224)
 SPLITS = ("train", "validation", "test")
+INITIAL_LEARNING_RATE = 1e-3
 
 
 def _tensorflow():
@@ -178,7 +179,11 @@ def load_split(
     return dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
 
 
-def build_model(number_of_classes: int, seed: int):
+def build_model(
+    number_of_classes: int,
+    seed: int,
+    learning_rate: float = INITIAL_LEARNING_RATE,
+):
     tf = _tensorflow()
     augmentation = tf.keras.Sequential(
         [
@@ -206,11 +211,68 @@ def build_model(number_of_classes: int, seed: int):
 
     model = tf.keras.Model(inputs, outputs)
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(),
+        optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
     )
     return model
+
+
+def configure_fine_tuning(
+    model,
+    unfreeze_layers: int,
+    learning_rate: float,
+) -> int:
+    if unfreeze_layers < 1:
+        raise ValueError("unfreeze_layers must be a positive integer")
+    if learning_rate <= 0:
+        raise ValueError("Fine-tuning learning rate must be positive")
+
+    tf = _tensorflow()
+    base_model = next(
+        (
+            layer
+            for layer in model.layers
+            if isinstance(layer, tf.keras.Model)
+            and layer.name.startswith("mobilenetv2")
+        ),
+        None,
+    )
+    if base_model is None:
+        raise ValueError("Could not locate the nested MobileNetV2 base model.")
+
+    base_model.trainable = True
+    unfreeze_from = max(0, len(base_model.layers) - unfreeze_layers)
+    trainable_layers = 0
+    for index, layer in enumerate(base_model.layers):
+        layer.trainable = (
+            index >= unfreeze_from
+            and not isinstance(layer, tf.keras.layers.BatchNormalization)
+        )
+        trainable_layers += int(layer.trainable)
+
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"],
+    )
+    return trainable_layers
+
+
+def _merge_histories(*histories) -> dict[str, list[float]]:
+    merged = {}
+    for history in histories:
+        if history is None:
+            continue
+        for key, values in history.history.items():
+            merged.setdefault(key, []).extend(float(value) for value in values)
+    return merged
+
+
+def _record_experiment(experiment_path: Path, record: dict) -> None:
+    experiment_path.parent.mkdir(parents=True, exist_ok=True)
+    with experiment_path.open("a", encoding="utf-8") as file:
+        file.write(json.dumps(record, sort_keys=True) + "\n")
 
 
 def _metrics_from_predictions(true_labels, predicted_labels, class_names: tuple[str, ...]) -> dict:
@@ -353,6 +415,13 @@ def _pointer_value(path: Path) -> str:
     return str(resolved)
 
 
+def _portable_path(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    if resolved.is_relative_to(PROJECT_DIR):
+        return resolved.relative_to(PROJECT_DIR).as_posix()
+    return f"external/{path.name}"
+
+
 def _activate_model(model_path: Path, metadata_path: Path) -> None:
     active_dir = DEFAULT_OUTPUT_DIR
     active_dir.mkdir(parents=True, exist_ok=True)
@@ -384,13 +453,27 @@ def main() -> None:
     parser.add_argument("--version")
     parser.add_argument("--dataset-version", default="unversioned")
     parser.add_argument("--confidence-threshold", type=float, default=0.60)
+    parser.add_argument("--learning-rate", type=float, default=INITIAL_LEARNING_RATE)
+    parser.add_argument("--fine-tune-epochs", type=int, default=0)
+    parser.add_argument("--fine-tune-layers", type=int, default=30)
+    parser.add_argument("--fine-tune-learning-rate", type=float, default=1e-5)
+    parser.add_argument(
+        "--experiment-log",
+        type=Path,
+        default=PROJECT_DIR / "experiments" / "experiments.jsonl",
+    )
+    parser.add_argument("--experiment-notes", default="")
     parser.add_argument("--activate", action="store_true")
     args = parser.parse_args()
 
-    if args.epochs < 1 or args.batch_size < 1:
-        parser.error("--epochs and --batch-size must be positive integers")
+    if args.epochs < 1 or args.batch_size < 1 or args.fine_tune_epochs < 0:
+        parser.error("--epochs and --batch-size must be positive; fine-tune epochs cannot be negative")
     if not 0 <= args.confidence_threshold <= 1:
         parser.error("--confidence-threshold must be between 0 and 1")
+    if args.learning_rate <= 0 or args.fine_tune_learning_rate <= 0:
+        parser.error("Learning rates must be positive")
+    if args.fine_tune_layers < 1:
+        parser.error("--fine-tune-layers must be positive")
     if args.seed < 0:
         parser.error("--seed must be a non-negative integer")
 
@@ -405,13 +488,25 @@ def main() -> None:
 
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
+    experiment_path = args.experiment_log.expanduser()
+    if not experiment_path.is_absolute():
+        experiment_path = PROJECT_DIR / experiment_path
+    experiment_path = experiment_path.resolve()
     stem = f"floraguard_{version}"
     model_path = output_dir / f"{stem}.keras"
     metadata_path = output_dir / f"{stem}_metadata.json"
     evaluation_path = output_dir / f"{stem}_evaluation.json"
     confusion_path = output_dir / f"{stem}_confusion_matrix.png"
     failures_path = output_dir / f"{stem}_incorrect_predictions.csv"
-    target_paths = (model_path, metadata_path, evaluation_path, confusion_path, failures_path)
+    candidate_path = output_dir / f"{stem}_fine_tune_candidate.keras"
+    target_paths = (
+        model_path,
+        metadata_path,
+        evaluation_path,
+        confusion_path,
+        failures_path,
+        candidate_path,
+    )
     _ensure_new_version(target_paths)
 
     tf = _tensorflow()
@@ -426,31 +521,34 @@ def main() -> None:
         )
         for split in SPLITS
     }
-    model = build_model(len(CLASS_NAMES), args.seed)
-    callbacks = [
-        tf.keras.callbacks.EarlyStopping(
-            monitor="val_loss",
-            patience=5,
-            restore_best_weights=True,
-        ),
-        tf.keras.callbacks.ModelCheckpoint(
-            filepath=str(model_path),
-            monitor="val_loss",
-            save_best_only=True,
-            verbose=1,
-        ),
-        tf.keras.callbacks.ReduceLROnPlateau(
-            monitor="val_loss",
-            factor=0.25,
-            patience=2,
-            min_lr=1e-6,
-        ),
-    ]
-    history = model.fit(
+    model = build_model(len(CLASS_NAMES), args.seed, args.learning_rate)
+
+    def callbacks_for(checkpoint_path: Path):
+        return [
+            tf.keras.callbacks.EarlyStopping(
+                monitor="val_loss",
+                patience=5,
+                restore_best_weights=True,
+            ),
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath=str(checkpoint_path),
+                monitor="val_loss",
+                save_best_only=True,
+                verbose=1,
+            ),
+            tf.keras.callbacks.ReduceLROnPlateau(
+                monitor="val_loss",
+                factor=0.25,
+                patience=2,
+                min_lr=1e-6,
+            ),
+        ]
+
+    stage_one_history = model.fit(
         datasets["train"],
         validation_data=datasets["validation"],
         epochs=args.epochs,
-        callbacks=callbacks,
+        callbacks=callbacks_for(model_path),
         verbose=1,
     )
     if not model_path.is_file():
@@ -458,6 +556,38 @@ def main() -> None:
             "Training completed without saving a best validation checkpoint."
         )
     model = tf.keras.models.load_model(model_path)
+    stage_two_history = None
+    fine_tuning_summary = {
+        "enabled": args.fine_tune_epochs > 0,
+        "requested_epochs": args.fine_tune_epochs,
+        "requested_unfreeze_layers": args.fine_tune_layers,
+        "learning_rate": args.fine_tune_learning_rate,
+        "trainable_base_layers": 0,
+        "selected": False,
+    }
+    if args.fine_tune_epochs > 0:
+        fine_tuning_summary["trainable_base_layers"] = configure_fine_tuning(
+            model,
+            args.fine_tune_layers,
+            args.fine_tune_learning_rate,
+        )
+        stage_two_history = model.fit(
+            datasets["train"],
+            validation_data=datasets["validation"],
+            epochs=args.fine_tune_epochs,
+            callbacks=callbacks_for(candidate_path),
+            verbose=1,
+        )
+        stage_one_best = min(stage_one_history.history["val_loss"])
+        stage_two_best = min(stage_two_history.history["val_loss"])
+        fine_tuning_summary["stage_one_best_validation_loss"] = float(stage_one_best)
+        fine_tuning_summary["stage_two_best_validation_loss"] = float(stage_two_best)
+        if candidate_path.is_file() and stage_two_best < stage_one_best:
+            candidate_model = tf.keras.models.load_model(candidate_path)
+            candidate_model.save(model_path)
+            fine_tuning_summary["selected"] = True
+        candidate_path.unlink(missing_ok=True)
+        model = tf.keras.models.load_model(model_path)
 
     true_labels = [label for _, label, _ in split_records["test"]]
     predicted_labels = []
@@ -466,7 +596,7 @@ def main() -> None:
     test_probabilities = model.predict(datasets["test"], verbose=0)
     if len(test_probabilities) != len(split_records["test"]):
         raise RuntimeError("Test prediction count does not match the test manifest.")
-    for (image_path, label_index, _group_id), probabilities in zip(
+    for (image_path, label_index, _), probabilities in zip(
         split_records["test"],
         test_probabilities,
     ):
@@ -504,10 +634,10 @@ def main() -> None:
         confidence_values,
         args.confidence_threshold,
     )
-    evaluation["training_history"] = {
-        key: [float(value) for value in values]
-        for key, values in history.history.items()
-    }
+    evaluation["training_history"] = _merge_histories(
+        stage_one_history,
+        stage_two_history,
+    )
     _save_confusion_matrix_png(
         evaluation["confusion_matrix"],
         CLASS_NAMES,
@@ -529,11 +659,46 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(failures)
 
+    experiment_id = (
+        f"floraguard_{version}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}"
+    )
+    merged_history = _merge_histories(stage_one_history, stage_two_history)
+    experiment_record = {
+        "experiment_id": experiment_id,
+        "date_utc": datetime.now(timezone.utc).isoformat(),
+        "model_version": version,
+        "dataset_version": args.dataset_version,
+        "model_architecture": "MobileNetV2",
+        "image_size": list(IMAGE_SIZE),
+        "batch_size": args.batch_size,
+        "learning_rate": args.learning_rate,
+        "fine_tuning": fine_tuning_summary,
+        "epochs": {
+            "head_training_maximum": args.epochs,
+            "fine_tuning_maximum": args.fine_tune_epochs,
+        },
+        "augmentation": [
+            "horizontal_flip",
+            "rotation_0.04",
+            "zoom_0.08",
+            "brightness_0.08",
+        ],
+        "validation_metrics": {
+            key: merged_history[key]
+            for key in ("loss", "accuracy", "val_loss", "val_accuracy")
+            if key in merged_history
+        },
+        "test_metrics": evaluation,
+        "confidence_threshold": args.confidence_threshold,
+        "notes": args.experiment_notes,
+        "experiment_log": _portable_path(experiment_path),
+    }
     metadata = {
+        "experiment_id": experiment_id,
         "model_version": version,
         "training_date_utc": datetime.now(timezone.utc).isoformat(),
         "dataset_version": args.dataset_version,
-        "dataset_manifest": str(manifest.resolve()) if manifest.is_file() else None,
+        "dataset_manifest": _portable_path(manifest) if manifest.is_file() else None,
         "split_method": split_method,
         "class_names": list(CLASS_NAMES),
         "image_size": list(IMAGE_SIZE),
@@ -552,20 +717,24 @@ def main() -> None:
             "seed": args.seed,
             "maximum_epochs": args.epochs,
             "batch_size": args.batch_size,
+            "learning_rate": args.learning_rate,
             "confidence_threshold": args.confidence_threshold,
             "optimizer": "Adam",
             "loss": "sparse_categorical_crossentropy",
             "early_stopping": {"monitor": "val_loss", "patience": 5},
+            "fine_tuning": fine_tuning_summary,
         },
         "split_image_counts": {
             split: len(split_records[split]) for split in SPLITS
         },
         "evaluation": evaluation,
         "severity_method": "prototype_visual_coverage",
+        "experiment_notes": args.experiment_notes,
     }
     model.save(model_path)
     metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     evaluation_path.write_text(json.dumps(evaluation, indent=2), encoding="utf-8")
+    _record_experiment(experiment_path, experiment_record)
     if args.activate:
         _activate_model(model_path, metadata_path)
 
@@ -575,6 +744,7 @@ def main() -> None:
     print(f"Evaluation: {evaluation_path}")
     print(f"Confusion matrix: {confusion_path}")
     print(f"Incorrect predictions: {failures_path}")
+    print(f"Experiment log: {experiment_path}")
 
 
 if __name__ == "__main__":

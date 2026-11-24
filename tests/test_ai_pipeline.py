@@ -471,6 +471,43 @@ def test_confidence_metrics_report_uncertain_rate_and_accepted_accuracy():
     }
 
 
+def test_training_history_merges_stages_and_experiment_log_appends(tmp_path):
+    first_history = type(
+        "History",
+        (),
+        {"history": {"loss": [1.0, 0.8], "val_loss": [1.1, 0.9]}},
+    )()
+    second_history = type(
+        "History",
+        (),
+        {"history": {"loss": [0.7], "val_loss": [0.85]}},
+    )()
+    merged = train_model._merge_histories(first_history, second_history)
+    log_path = tmp_path / "experiments" / "experiments.jsonl"
+
+    train_model._record_experiment(log_path, {"experiment_id": "run-1"})
+    train_model._record_experiment(log_path, {"experiment_id": "run-2"})
+
+    records = [
+        json.loads(line)
+        for line in log_path.read_text(encoding="utf-8").splitlines()
+    ]
+    assert merged == {
+        "loss": [1.0, 0.8, 0.7],
+        "val_loss": [1.1, 0.9, 0.85],
+    }
+    assert [record["experiment_id"] for record in records] == ["run-1", "run-2"]
+
+
+def test_training_metadata_paths_are_portable():
+    assert train_model._portable_path(train_model.PROJECT_DIR / "data" / "rose") == (
+        "data/rose"
+    )
+    assert train_model._portable_path(Path("C:/colab/data/split.csv")) == (
+        "external/split.csv"
+    )
+
+
 def test_confusion_matrix_artifact_is_written(tmp_path):
     output = tmp_path / "confusion.png"
     train_model._save_confusion_matrix_png(
