@@ -18,7 +18,7 @@ visual-coverage estimate until expert-labelled severity data is available.
   marked mock predictor.
 
 See [DATASET.md](./DATASET.md) for collection/provenance requirements and
-[backend/AI_INTEGRATION.md](./backend/AI_INTEGRATION.md) for the backend adapter.
+[AI_INTEGRATION.md](./AI_INTEGRATION.md) for the predictor contract.
 
 ## Install
 
@@ -150,7 +150,7 @@ The classifier's confidence is not disease severity. Since no expert severity
 labels currently exist, severity uses an isolated prototype visual-coverage
 heuristic and reports `severity_source: "prototype_visual_coverage"` when it
 can estimate from the image. See [DATASET.md](./DATASET.md) and
-[backend/AI_INTEGRATION.md](./backend/AI_INTEGRATION.md) for limitations.
+[AI_INTEGRATION.md](./AI_INTEGRATION.md) for limitations.
 Detailed output includes a probability for each supported class. These
 probabilities and the prototype severity estimate are not agronomist diagnoses.
 
@@ -167,8 +167,8 @@ The tests use a fake model for predictor contract/threshold checks and generated
 temporary images for data-pipeline checks. They do not train a model and do not
 produce model-performance metrics.
 
-## Member 2 backend
+## Backend handoff
 
-See [backend/AI_INTEGRATION.md](./backend/AI_INTEGRATION.md) for the adapter
-module, model version reporting, and backend configuration. The backend's
-rule-based risk engine remains separate and authoritative for area-level risk.
+See [AI_INTEGRATION.md](./AI_INTEGRATION.md) for the simple predictor function
+and response contract. Area-level risk calculation remains outside this AI
+component.

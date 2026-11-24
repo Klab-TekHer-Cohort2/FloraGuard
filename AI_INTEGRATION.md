@@ -1,0 +1,64 @@
+# FloraGuard AI integration
+
+This repository contains the AI and data component only. The backend can call
+the image predictor directly; it does not need to import the training code or
+know the model architecture, preprocessing, or dataset layout.
+
+## Predictor interface
+
+From the project root (or with the project root on `PYTHONPATH`), call:
+
+```python
+from predictor import predict_image
+
+prediction = predict_image(saved_image_path)
+```
+
+`saved_image_path` must point to a local JPEG, PNG, or WebP image. The function
+returns a dictionary with these contract fields:
+
+```python
+{
+    "problem": "spider_mite",
+    "severity": "medium",
+    "confidence": 0.87,
+    "candidate_problem": None,
+    "model_version": "v1",
+}
+```
+
+Allowed problems are `healthy`, `spider_mite`, `thrips`, `powdery_mildew`,
+`downy_mildew`, `grey_mould`, `black_spot`, and `uncertain`. Severity is `low`,
+`medium`, `high`, or `unknown`. Confidence is the highest class probability;
+it is not disease severity. The backend can store the additional
+`candidate_problem` and `model_version` fields or ignore them.
+
+The default configurable confidence threshold is `0.60` via
+`CONFIDENCE_THRESHOLD`. Below it, `problem` is `uncertain`, severity is
+`unknown`, and `candidate_problem` retains the most likely class.
+
+The predictor raises clear errors for a missing model, missing or corrupted
+images, unsupported formats, and invalid model output. A trained model is
+required for real predictions. Until one is trained and activated, keep the
+backend's own mock predictor selected; do not report mock output as a model
+prediction.
+
+## Model selection
+
+Train and review a version before activation:
+
+```powershell
+python train_model.py --data-dir data/rose --output-dir models --version v1
+python activate_model.py --model models/floraguard_v1.keras
+```
+
+The active model is selected by `models/active_model.json`. Set
+`FLORAGUARD_MODEL_PATH` to select a specific version instead. Install the AI
+dependencies from the project root with `python -m pip install -r requirements.txt`.
+See [README.md](./README.md) for dataset preparation and training, and
+[DATASET.md](./DATASET.md) for provenance and quality requirements.
+
+No rose dataset or trained model is currently included. Severity is a
+prototype visual-coverage estimate, not an expert-validated diagnosis.
+Image classification only identifies what is visible in a photograph; it does
+not calculate community or area-level risk.
