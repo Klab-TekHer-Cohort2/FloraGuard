@@ -1,0 +1,2 @@
+# Optional graph knowledge layer; not required for CNN training or prediction.
+neo4j>=5,<7
