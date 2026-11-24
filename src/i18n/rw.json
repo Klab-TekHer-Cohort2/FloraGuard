@@ -1,0 +1,480 @@
+{
+  "_meta": "Kinyarwanda translations — keys marked TODO-native-review need review by a native speaker.",
+
+  "app": {
+    "name": "FloraGuard",
+    "tagline": "TODO-native-review",
+    "disclaimer": "TODO-native-review",
+    "demoData": "TODO-native-review",
+    "demoDataDismiss": "TODO-native-review"
+  },
+
+  "nav": {
+    "home": "Ahabanza",
+    "check": "Suzuma",
+    "map": "Ikarita",
+    "alerts": "Imenyesha",
+    "overview": "Incamake",
+    "reports": "Raporo",
+    "settings": "Igenamigambi",
+    "switchRole": "TODO-native-review",
+    "logoAlt": "TODO-native-review"
+  },
+
+  "header": {
+    "languageSwitcher": "Hindura ururimi",
+    "themeSwitcher": "TODO-native-review",
+    "themeLight": "TODO-native-review",
+    "themeDark": "TODO-native-review",
+    "roleLabel": "TODO-native-review",
+    "roleGrowerShort": "TODO-native-review",
+    "roleManagerShort": "TODO-native-review"
+  },
+
+  "offline": {
+    "banner": "TODO-native-review",
+    "savedToQueue": "TODO-native-review"
+  },
+
+  "common": {
+    "loading": "TODO-native-review",
+    "error": "TODO-native-review",
+    "retry": "Ongera ugerageze",
+    "dismiss": "TODO-native-review",
+    "confirm": "Emeza",
+    "cancel": "Hagarika",
+    "save": "Bika",
+    "back": "Subira inyuma",
+    "close": "Funga",
+    "readMore": "TODO-native-review",
+    "viewAll": "TODO-native-review",
+    "markRead": "TODO-native-review",
+    "markAllRead": "TODO-native-review",
+    "unread": "TODO-native-review",
+    "read": "TODO-native-review",
+    "ago": "TODO-native-review",
+    "today": "Uyu munsi",
+    "yesterday": "Ejo hashize",
+    "hoursAgo": "TODO-native-review",
+    "minutesAgo": "TODO-native-review",
+    "daysAgo": "TODO-native-review",
+    "dateFormat": "TODO-native-review",
+    "learnMore": "TODO-native-review",
+    "getStarted": "Tangira",
+    "skip": "Reka",
+    "yes": "Yego",
+    "no": "Oya",
+    "or": "cyangwa",
+    "and": "na",
+    "zone": "Agace",
+    "confidence": "TODO-native-review",
+    "severity": "TODO-native-review",
+    "problem": "Ikibazo",
+    "status": "Imiterere",
+    "date": "Itariki",
+    "actions": "TODO-native-review",
+    "search": "Shakisha",
+    "filter": "TODO-native-review",
+    "clearFilters": "TODO-native-review",
+    "sortBy": "TODO-native-review",
+    "all": "Byose",
+    "none": "Nta na kimwe",
+    "pending": "TODO-native-review",
+    "confirmed": "Byemejwe",
+    "dismissed": "TODO-native-review",
+    "healthy": "Bizima",
+    "unknown": "TODO-native-review",
+    "optional": "TODO-native-review",
+    "required": "Bisabwa",
+    "riskLevel": {
+      "label": "Urwego rw'ibibazo",
+      "low": "Akaga gato",
+      "medium": "Akaga hagati",
+      "high": "Akaga gakabije",
+      "unknown": "TODO-native-review",
+      "ariaLabel": "TODO-native-review"
+    },
+    "severityLevel": {
+      "low": "Gato",
+      "medium": "Hagati",
+      "high": "Gakabije",
+      "unknown": "TODO-native-review"
+    },
+    "problems": {
+      "healthy": "Bizima",
+      "spiderMite": "Inzoya z'inzoka nto",
+      "thrips": "Thrips",
+      "powderyMildew": "Umucu w'umweru",
+      "downyMildew": "TODO-native-review",
+      "greyMould": "TODO-native-review",
+      "blackSpot": "Imbeba nzizi"
+    }
+  },
+
+  "welcome": {
+    "hero": {
+      "headline": "TODO-native-review",
+      "subheadline": "TODO-native-review",
+      "getStarted": "Tangira",
+      "howItWorks": "Uburyo bikora",
+      "logoAlt": "TODO-native-review"
+    },
+    "chooseRole": {
+      "title": "Ni nde uri we?",
+      "subtitle": "TODO-native-review",
+      "grower": {
+        "title": "Ndi umuhinzi cyangwa umujyanama",
+        "description": "TODO-native-review"
+      },
+      "manager": {
+        "title": "Ndi umuhanga w'ubuhinzi, umuyobozi w'inzu, cyangwa umukozi",
+        "description": "TODO-native-review"
+      }
+    },
+    "howItWorks": {
+      "title": "Uburyo bikora",
+      "step1": {
+        "title": "Fata ifoto",
+        "description": "TODO-native-review"
+      },
+      "step2": {
+        "title": "AI isuzuma",
+        "description": "TODO-native-review"
+      },
+      "step3": {
+        "title": "Agace kawe gashyirwa ku ikarita",
+        "description": "TODO-native-review"
+      },
+      "step4": {
+        "title": "Inzira za hafi zirabibwa",
+        "description": "TODO-native-review"
+      }
+    },
+    "whyItMatters": {
+      "title": "Impamvu ibyo bigira akamaro",
+      "card1": {
+        "title": "TODO-native-review",
+        "description": "TODO-native-review"
+      },
+      "card2": {
+        "title": "TODO-native-review",
+        "description": "TODO-native-review"
+      },
+      "card3": {
+        "title": "TODO-native-review",
+        "description": "TODO-native-review"
+      }
+    },
+    "whoItIsFor": {
+      "title": "Ni ba nde bibandaho",
+      "grower": {
+        "title": "Abahinzi n'abajyanama",
+        "description": "TODO-native-review"
+      },
+      "manager": {
+        "title": "Abayobozi b'amafarmu n'inzobere mu buhinzi",
+        "description": "TODO-native-review"
+      },
+      "officer": {
+        "title": "NAEB n'abakozi b'iterambere ry'ubuhinzi",
+        "description": "TODO-native-review"
+      }
+    },
+    "builtForRwanda": {
+      "title": "Yakozwe ku bahinzi b'imbuto mu Rwanda",
+      "subtitle": "Itangira mu turere tw'imbuto mu Rwanda.",
+      "mapAlt": "TODO-native-review"
+    },
+    "trust": {
+      "title": "TODO-native-review",
+      "disclaimer": "TODO-native-review",
+      "privacy": "TODO-native-review",
+      "version": "Verisiyo"
+    }
+  },
+
+  "grower": {
+    "home": {
+      "title": "Agace kange",
+      "greeting": "Muraho",
+      "dashboardSubtitle": "Reba uko amaroza yo mu gace kawe ameze.",
+      "areaRisk": "Akaga k'agace",
+      "riskNeedsAttention": "Hari uduce twegereye dukeneye kwitabwaho.",
+      "riskModerate": "Hari uduce twegereye dufite ibyago biciriritse. Komeza gukurikirana.",
+      "riskLooksCalm": "Kurikirana amakuru mashya y'ubuzima bw'amaroza.",
+      "zonesMonitored": "Uduce dukurikiranwa",
+      "activeWarnings": "Imiburo iheruka",
+      "highRiskZones": "Uduce dufite ibyago byinshi",
+      "highestRiskZone": "Ibyago byinshi",
+      "monitoringNote": "Imiterere y'akarere",
+      "checkSubtitle": "Fata ifoto urebe ibibazo bikunze kwibasira amaroza.",
+      "communityUpdates": "Amakuru y'abaturanyi",
+      "areaRiskLoading": "TODO-native-review",
+      "checkButton": "Suzuma imbuto zange",
+      "recentAlerts": "Imenyesha yabonetse vuba",
+      "noAlerts": "Nta menyesha",
+      "noAlertsMessage": "TODO-native-review",
+      "viewMap": "Reba ikarita rusange",
+      "viewAllAlerts": "Reba imenyesha yose"
+    },
+    "checkRoses": {
+      "title": "Suzuma imbuto zange",
+      "uploadTitle": "Fata cyangwa shyira ifoto",
+      "uploadInstruction": "TODO-native-review",
+      "uploadButton": "Hitamo ifoto",
+      "uploadDragDrop": "TODO-native-review",
+      "uploadFileSizeHint": "TODO-native-review",
+      "uploadAccept": "image/*",
+      "retake": "Fata ifoto nshya",
+      "analyse": "TODO-native-review",
+      "analysing": "Gusuzuma imbuto zawe…",
+      "analysingSubtitle": "TODO-native-review",
+      "resultTitle": "Ibi ni ibyo twabonanye",
+      "lowConfidenceTitle": "Ntituzwi neza — baza inzobere",
+      "lowConfidenceMessage": "TODO-native-review",
+      "lowConfidenceSuggestion": "TODO-native-review",
+      "confidence": "TODO-native-review",
+      "confidenceUnavailable": "TODO-native-review",
+      "advice": "TODO-native-review",
+      "submitToMap": "TODO-native-review",
+      "submitSuccess": "TODO-native-review",
+      "submitError": "TODO-native-review",
+      "offlineAnalysisTitle": "TODO-native-review",
+      "offlineAnalysisMessage": "TODO-native-review",
+      "offlineQueueButton": "TODO-native-review",
+      "checkAnother": "Suzuma ifoto nshya",
+      "discardConfirm": "TODO-native-review",
+      "discardYes": "Yego, siba",
+      "discardNo": "Bika ifoto",
+      "errorTitle": "TODO-native-review",
+      "errorMessage": "TODO-native-review",
+      "errorRetry": "Ongera ugerageze",
+      "offlineSynced": "TODO-native-review",
+      "offlineSyncFailed": "TODO-native-review",
+      "analysisUnavailableTitle": "TODO-native-review",
+      "analysisUnavailableMessage": "TODO-native-review",
+      "offlineQueued": "TODO-native-review",
+      "disclaimer": "TODO-native-review",
+      "ariaUploadArea": "TODO-native-review",
+      "ariaImagePreview": "TODO-native-review",
+      "ariaAnalysing": "TODO-native-review",
+      "ariaResult": "TODO-native-review"
+    },
+    "map": {
+      "title": "Ikarita rusange",
+      "subtitle": "TODO-native-review",
+      "legend": "TODO-native-review",
+      "legendLow": "Akaga gato",
+      "legendMedium": "Akaga hagati",
+      "legendHigh": "Akaga gakabije",
+      "popupZone": "Agace",
+      "popupReports": "TODO-native-review",
+      "popupMainProblems": "TODO-native-review",
+      "popupLastUpdate": "TODO-native-review",
+      "popupWeather": "TODO-native-review",
+      "popupTemp": "{{temp}}°C",
+      "popupHumidity": "TODO-native-review",
+      "loading": "TODO-native-review",
+      "ariaMapContainer": "TODO-native-review",
+      "ariaZonePolygon": "TODO-native-review",
+      "noData": "TODO-native-review",
+      "zoomIn": "Noza ifoto",
+      "zoomOut": "Mporora ifoto"
+    },
+    "alerts": {
+      "title": "Imenyesha yanjye",
+      "subtitle": "TODO-native-review",
+      "empty": "Nta menyesha",
+      "emptyMessage": "TODO-native-review",
+      "markAllRead": "TODO-native-review",
+      "markRead": "TODO-native-review",
+      "ariaUnread": "TODO-native-review",
+      "unreadCount": "TODO-native-review",
+      "unreadCountPlural": "TODO-native-review",
+      "whatToDo": "Iki gikwiriye gukorwa",
+      "zone": "Agace {{zone}}"
+    }
+  },
+
+  "dashboard": {
+    "overview": {
+      "title": "Incamake",
+      "subtitle": "TODO-native-review",
+      "totalReports": "Raporo zose",
+      "confirmedCases": "Ibyemejwe",
+      "highRiskZones": "TODO-native-review",
+      "unreadAlerts": "TODO-native-review",
+      "reportsByDay": "TODO-native-review",
+      "reportsByDaySubtitle": "TODO-native-review",
+      "problemBreakdown": "TODO-native-review",
+      "recentHighRisk": "TODO-native-review",
+      "loadingKPIs": "TODO-native-review",
+      "loadingChart": "TODO-native-review"
+    },
+    "map": {
+      "title": "Ikarita y'agace",
+      "subtitle": "TODO-native-review",
+      "filterLabel": "TODO-native-review",
+      "filterAll": "Ibice byose",
+      "filterHigh": "Akaga gakabije",
+      "filterMedium": "Akaga hagati",
+      "filterLow": "Akaga gato",
+      "zonesPanel": "Ibice",
+      "zonePanelAriaLabel": "TODO-native-review",
+      "flyToZone": "TODO-native-review",
+      "legend": "TODO-native-review",
+      "legendLow": "Akaga gato",
+      "legendMedium": "Akaga hagati",
+      "legendHigh": "Akaga gakabije",
+      "ariaMapContainer": "TODO-native-review",
+      "ariaZonePolygon": "TODO-native-review"
+    },
+    "reports": {
+      "title": "Raporo",
+      "subtitle": "TODO-native-review",
+      "search": "Shakisha raporo…",
+      "filterProblem": "Ikibazo",
+      "filterSeverity": "TODO-native-review",
+      "filterZone": "Agace",
+      "filterStatus": "Imiterere",
+      "sortDate": "Itariki",
+      "sortSeverity": "TODO-native-review",
+      "sortConfidence": "TODO-native-review",
+      "confirmAction": "Emeza",
+      "dismissAction": "TODO-native-review",
+      "confirmModalTitle": "TODO-native-review",
+      "confirmModalMessage": "TODO-native-review",
+      "confirmModalYes": "Yego, emeza",
+      "confirmModalNo": "Hagarika",
+      "dismissModalTitle": "TODO-native-review",
+      "dismissModalMessage": "TODO-native-review",
+      "dismissModalYes": "TODO-native-review",
+      "dismissModalNo": "Hagarika",
+      "empty": "Nta raporo yabonetse",
+      "emptyMessage": "TODO-native-review",
+      "pagination": "TODO-native-review",
+      "paginationPrev": "TODO-native-review",
+      "paginationNext": "TODO-native-review",
+      "perPage": "TODO-native-review"
+    },
+    "alerts": {
+      "title": "Imenyesha",
+      "subtitle": "TODO-native-review",
+      "timeline": "TODO-native-review",
+      "timelineSubtitle": "TODO-native-review",
+      "filterRisk": "TODO-native-review",
+      "filterRead": "TODO-native-review",
+      "filterAll": "Byose",
+      "filterUnread": "TODO-native-review",
+      "filterRead2": "TODO-native-review",
+      "bulkMarkRead": "TODO-native-review",
+      "empty": "Nta menyesha yabonetse",
+      "emptyMessage": "TODO-native-review"
+    },
+    "settings": {
+      "title": "Igenamigambi",
+      "language": "Ururimi",
+      "languageEN": "Icyongereza",
+      "languageRW": "Ikinyarwanda",
+      "theme": "TODO-native-review",
+      "themeLight": "TODO-native-review",
+      "themeDark": "TODO-native-review",
+      "role": "TODO-native-review",
+      "roleGrowerLabel": "TODO-native-review",
+      "roleManagerLabel": "TODO-native-review",
+      "switchRole": "TODO-native-review",
+      "switchRoleConfirm": "TODO-native-review",
+      "about": "TODO-native-review",
+      "aboutLink": "TODO-native-review",
+      "version": "Verisiyo"
+    }
+  },
+
+  "about": {
+    "title": "TODO-native-review",
+    "intro": "TODO-native-review",
+    "howItWorks": "Uburyo bikora",
+    "disclaimer": "TODO-native-review",
+    "privacy": "TODO-native-review",
+    "privacyDetail": "TODO-native-review",
+    "version": "Verisiyo",
+    "backHome": "TODO-native-review"
+  },
+
+  "notFound": {
+    "title": "TODO-native-review",
+    "message": "TODO-native-review",
+    "backHome": "TODO-native-review"
+  },
+
+  "emptyState": {
+    "noReports": {
+      "title": "Nta raporo",
+      "message": "TODO-native-review",
+      "action": "Suzuma imbuto zange"
+    },
+    "noAlerts": {
+      "title": "Nta menyesha",
+      "message": "TODO-native-review",
+      "action": "Reba ikarita"
+    },
+    "noZones": {
+      "title": "TODO-native-review",
+      "message": "TODO-native-review",
+      "action": "Ongera ugerageze"
+    }
+  },
+
+  "errors": {
+    "generic": "TODO-native-review",
+    "network": "TODO-native-review",
+    "uploadFailed": "TODO-native-review",
+    "analyseFailed": "TODO-native-review",
+    "loadFailed": "TODO-native-review",
+    "invalidImage": "TODO-native-review",
+    "imageTooLarge": "TODO-native-review",
+    "offline": "TODO-native-review",
+    "ariaError": "TODO-native-review"
+  },
+
+  "aria": {
+    "loading": "TODO-native-review",
+    "loadingData": "TODO-native-review",
+    "uploading": "TODO-native-review",
+    "analysing": "TODO-native-review",
+    "closeModal": "Funga",
+    "openMenu": "TODO-native-review",
+    "closeMenu": "TODO-native-review",
+    "expandZone": "TODO-native-review",
+    "collapseZone": "TODO-native-review",
+    "alertUnread": "TODO-native-review",
+    "alertRead": "TODO-native-review",
+    "skipToContent": "TODO-native-review",
+    "mainNav": "TODO-native-review",
+    "bottomNav": "TODO-native-review",
+    "mapControls": "TODO-native-review",
+    "riskBadge": "TODO-native-review",
+    "severityMeter": "TODO-native-review",
+    "confidenceMeter": "TODO-native-review",
+    "unreadBadge": "TODO-native-review",
+    "photoPreview": "TODO-native-review",
+    "dismissBanner": "TODO-native-review"
+  },
+
+  "toast": {
+    "reportShared": "TODO-native-review",
+    "reportSaved": "TODO-native-review",
+    "settingsSaved": "TODO-native-review",
+    "markedRead": "TODO-native-review",
+    "allMarkedRead": "TODO-native-review",
+    "caseConfirmed": "Ibyemejwe.",
+    "caseDismissed": "TODO-native-review",
+    "error": "TODO-native-review",
+    "offline": "TODO-native-review"
+  },
+
+  "language": {
+    "en": "Icyongereza",
+    "rw": "Ikinyarwanda"
+  }
+}
