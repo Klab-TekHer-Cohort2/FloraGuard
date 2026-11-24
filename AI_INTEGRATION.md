@@ -48,15 +48,27 @@ prediction.
 Train and review a version before activation:
 
 ```powershell
+python dataset_tools.py validate --data-dir data/rose/source --output-dir reports/dataset
+python dataset_tools.py split --data-dir data/rose --source-dir data/rose/source --source-manifest data/rose/source_manifest.csv --output data/rose/split_manifest.csv --seed 42
 python train_model.py --data-dir data/rose --output-dir models --version v1
-python activate_model.py --model models/floraguard_v1.keras
+python activate_model.py --model models
 ```
+
+The checked-in source manifest currently contains no image rows, so splitting
+and training stop until real, correctly labelled images and provenance are
+added. The split command expects `--source-manifest` to name the CSV file.
+`test_predictor.py` then runs inference on an actual image listed in the test
+split; it does not create a sample image.
 
 The active model is selected by `models/active_model.json`. Set
 `FLORAGUARD_MODEL_PATH` to select a specific version instead. Install the AI
 dependencies from the project root with `python -m pip install -r requirements.txt`.
 See [README.md](./README.md) for dataset preparation and training, and
 [DATASET.md](./DATASET.md) for provenance and quality requirements.
+
+Training supports CPU without CUDA or NVIDIA dependencies. On Google Colab,
+install the same requirements, provide the real dataset and manifest, and run
+the same scripts with paths adjusted for the mounted storage location.
 
 No rose dataset or trained model is currently included. Severity is a
 prototype visual-coverage estimate, not an expert-validated diagnosis.

@@ -24,6 +24,14 @@ Track provenance and grouping in `data/rose/source_manifest.csv`:
 | `group_id` | Same stable value for photos from the same plant/source/session |
 | `review_status` | `unreviewed`, `expert_reviewed`, `needs_review`, or another explicit status |
 
+The manifest is a CSV file with one row per image. The checked-in file contains
+only the header until images are collected; it does not imply that any images
+are available. Supported extensions are `.jpg`, `.jpeg`, `.png`, and `.webp`.
+Place each image inside its correctly labelled class folder and use a `path`
+relative to `data/rose/`, such as `source/healthy/leaf-001.jpg`. Use accurate
+provenance and stable group IDs; do not fill unknown fields with invented
+values.
+
 No public dataset is currently selected, downloaded, or licence-cleared. Check
 and record the licence and attribution requirements before importing public
 images. Ask an agronomist to review uncertain or ambiguous disease labels; do
@@ -94,6 +102,13 @@ a heuristic quality flag; use `expert_reviewed` only after expert review. If
 there are too few independent plants/sessions, collect more; do not weaken the
 test boundary to make training run.
 
+The current pipeline intentionally writes `data/rose/split_manifest.csv`
+instead of physically copying images into split directories. `train_model.py`
+consumes the paths from this manifest and reports calculated image counts for
+each split and class. Passing a directory to `--source-manifest` is an error;
+pass the CSV file path shown above. If there are no images or no manifest
+rows, splitting stops and explains what is missing.
+
 Training uses only the training split to update weights and validation split
 for early stopping/checkpoint selection. The test split is evaluated once after
 training and never used for training or model selection. Keep the generated
@@ -110,6 +125,18 @@ The trainer uses group-aware manifest paths without copying image files.
 Pre-existing `train/validation/test` folders remain supported for compatibility,
 but their source grouping cannot be verified; the group-aware manifest is
 preferred.
+
+## Hardware and Colab
+
+TensorFlow CPU training is supported; an NVIDIA GPU and CUDA are not required.
+Check available GPUs using `python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"`.
+An empty list means CPU execution. Native Windows TensorFlow 2.11+ does not
+support NVIDIA CUDA; no CUDA installation is needed. If local CPU training is
+too slow, the same scripts can run in Google Colab. Clone or upload the project,
+put the real dataset and its manifest at the documented paths, install the root
+`requirements.txt`, and run the same validation, split, and training commands.
+Use a Colab GPU runtime only if available, and save output model/evaluation
+files to persistent storage.
 
 ## Expert validation and limitations
 

@@ -14,8 +14,10 @@ visual-coverage estimate until expert-labelled severity data is available.
 - No rose dataset, trained weights, or prior evaluation results were present
   when the AI pipeline was inspected. No photographs, metrics, or expert review
   claims have been fabricated.
-- Until a model is trained and activated, the backend should continue using its
-  marked mock predictor.
+- The source-manifest template currently has zero image rows. Add real,
+  reviewed images and provenance before attempting a split or training.
+- Until a model is trained and activated, an integrating backend should keep
+  its own marked mock predictor.
 
 See [DATASET.md](./DATASET.md) for collection/provenance requirements and
 [AI_INTEGRATION.md](./AI_INTEGRATION.md) for the predictor contract.
@@ -25,7 +27,6 @@ See [DATASET.md](./DATASET.md) for collection/provenance requirements and
 Use Python supported by TensorFlow (the current project targets Python 3.11):
 
 ```powershell
-Set-Location G:\codes\FloweraAI
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
@@ -71,12 +72,20 @@ python dataset_tools.py split `
   --seed 42
 ```
 
-This writes paths and split assignments to a CSV and does not copy or move
-photos. It refuses to split invalid data or flagged images not explicitly
-reviewed, and requires enough distinct groups for all seven classes to appear
-in each split. Exact duplicate images are assigned together. The test split is
-read only after training finishes; it is never used for fitting or callbacks.
-Keep related/near-duplicate photos in one `group_id` to prevent leakage.
+`--source-manifest` must be the CSV **file**, not the `data/rose/` directory.
+The checked-in file has the correct header but currently has zero image rows.
+Add one row per source image using the columns described in [DATASET.md](./DATASET.md).
+
+This implementation intentionally writes paths and assignments to
+`data/rose/split_manifest.csv`; it does not copy photos or create
+`train/validation/test` directories. The trainer reads that manifest directly,
+avoiding duplicate image files. It refuses to split invalid data or flagged
+images not explicitly reviewed, and requires enough distinct groups for every
+class to appear in each split. Its JSON summary contains actual per-class
+counts for train, validation, and test. Exact and near-duplicate photos are
+kept in the same split. The test set is read only after training finishes; it
+is never used for fitting or callbacks. Keep related photos in one `group_id`
+to prevent leakage.
 
 ## Train and evaluate
 
@@ -92,7 +101,8 @@ python train_model.py `
   --confidence-threshold 0.60
 ```
 
-Training requires `train`, `validation`, and `test` examples for every class.
+Training requires examples for every class in the train, validation, and test
+parts of the split manifest.
 `train_model.py` uses MobileNetV2 transfer learning, training-only random
 horizontal flips, small rotations/zooms/brightness changes, early stopping,
 and validation-loss checkpointing. The best validation checkpoint is evaluated
@@ -113,8 +123,12 @@ project's own reviewed test data.
 Review the artifacts, then activate the version explicitly without retraining:
 
 ```powershell
-python activate_model.py --model models/floraguard_v1.keras
+python activate_model.py --model models
 ```
+
+The directory form works when it contains exactly one `floraguard_*.keras`
+version. If it contains multiple versions, specify the exact model file, for
+example `--model models/floraguard_v2.keras`.
 
 The predictor reads the selected version from `models/active_model.json`.
 Alternatively, set `FLORAGUARD_MODEL_PATH=models/floraguard_v1.keras` to select
@@ -166,6 +180,35 @@ python -m pytest -q tests
 The tests use a fake model for predictor contract/threshold checks and generated
 temporary images for data-pipeline checks. They do not train a model and do not
 produce model-performance metrics.
+
+After real images have been split and a trained model activated, this smoke test
+selects an actual image from the test split and runs the predictor:
+
+```powershell
+python test_predictor.py
+```
+
+It reports the selected image, problem, confidence, severity, and model version.
+It fails clearly if the split manifest or active trained model is missing.
+
+## CPU, GPU, and Google Colab
+
+CPU training is supported and no NVIDIA hardware, CUDA, or GPU packages are
+required. Check the devices visible to the active TensorFlow environment with:
+
+```powershell
+python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+```
+
+An empty list means TensorFlow will use the CPU. Native Windows TensorFlow 2.11
+and newer does not provide NVIDIA CUDA GPU support; do not install CUDA to fix
+an empty list. If local CPU training is too slow, Google Colab is an option:
+clone or upload this AI/data project, place the real dataset and manifest in
+its expected layout, select a GPU runtime if desired, install
+`requirements.txt`, and run the same validation, split, and training commands.
+The scripts use project/data paths and command-line options rather than
+machine-specific `G:\` or `C:\` paths. Save the trained model and evaluation
+artifacts somewhere persistent before the Colab runtime ends.
 
 ## Backend handoff
 
