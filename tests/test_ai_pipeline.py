@@ -12,6 +12,7 @@ import train_model
 from activate_model import activate_model
 from dataset_tools import CLASS_NAMES
 from severity import estimate_severity
+from test_predictor import select_test_image
 
 
 class FakeModel:
@@ -205,6 +206,64 @@ def test_activate_existing_version_changes_pointer_without_retraining(
     assert metadata["model_version"] == "v2"
     assert Path(active["model_file"]) == model_path.resolve()
     assert Path(active["metadata_file"]) == metadata_path.resolve()
+
+
+def test_activate_models_directory_when_it_contains_one_version(tmp_path):
+    models_dir = tmp_path / "models"
+    models_dir.mkdir()
+    model_path = models_dir / "floraguard_v1.keras"
+    model_path.write_bytes(b"test model placeholder")
+    model_path.with_name("floraguard_v1_metadata.json").write_text(
+        json.dumps({"class_names": list(CLASS_NAMES), "model_version": "v1"}),
+        encoding="utf-8",
+    )
+
+    active_path = activate_model(models_dir, active_dir=tmp_path / "active")
+
+    active = json.loads(active_path.read_text(encoding="utf-8"))
+    assert Path(active["model_file"]) == model_path.resolve()
+
+
+def test_activate_models_directory_explains_missing_or_ambiguous_model(tmp_path):
+    models_dir = tmp_path / "models"
+    models_dir.mkdir()
+
+    with pytest.raises(FileNotFoundError, match="The model has not been trained yet"):
+        activate_model(models_dir, active_dir=tmp_path / "active")
+
+    for version in ("v1", "v2"):
+        (models_dir / f"floraguard_{version}.keras").write_bytes(b"placeholder")
+    with pytest.raises(ValueError, match="Multiple model versions were found"):
+        activate_model(models_dir, active_dir=tmp_path / "active")
+
+
+def test_test_predictor_selects_an_image_from_the_test_split(tmp_path):
+    data_dir = tmp_path / "rose"
+    rows = []
+    for class_name in CLASS_NAMES:
+        for split in ("train", "validation", "test"):
+            relative_path = Path("source") / class_name / f"{split}.png"
+            image_path = data_dir / relative_path
+            image_path.parent.mkdir(parents=True, exist_ok=True)
+            Image.new("RGB", (64, 64), "green").save(image_path)
+            rows.append(
+                {
+                    "path": relative_path.as_posix(),
+                    "class_name": class_name,
+                    "group_id": f"{class_name}-{split}",
+                    "split": split,
+                }
+            )
+    manifest_path = data_dir / "split_manifest.csv"
+    with manifest_path.open("w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
+
+    selected = select_test_image(data_dir)
+
+    assert selected.is_file()
+    assert selected.stem == "test"
 
 
 def test_model_training_refuses_to_overwrite_a_version(tmp_path):
