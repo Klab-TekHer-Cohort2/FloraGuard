@@ -17,8 +17,6 @@ __pycache__/
 **/.pytest_cache/
 *.py[cod]
 *.db
-backend/data/
-backend/uploads/
 models/*.keras
 models/*_metadata.json
 models/*_evaluation.json

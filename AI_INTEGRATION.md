@@ -75,15 +75,6 @@ prototype visual-coverage estimate, not an expert-validated diagnosis.
 Image classification only identifies what is visible in a photograph; it does
 not calculate community or area-level risk.
 
-## FloraGuard app integration
-
-The FastAPI backend is in `backend/` and the React PWA is in `src/`. Start the
-backend from the project root with
-`python -m uvicorn backend.app.main:app --reload --port 8000`. Only set
-`FLORAGUARD_PREDICTOR=predictor:predict_image` in `backend/.env` after a model
-has been trained and activated. The optional Neo4j layer is separate from this
-standard predictor contract; see [knowledge_graph/README.md](./knowledge_graph/README.md).
-
 ## Optional Neo4j knowledge layer
 
 The standard `predict_image()` contract above does not connect to Neo4j and
