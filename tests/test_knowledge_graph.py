@@ -1,15 +1,77 @@
+import os
 import ssl
+from pathlib import Path
 
 import pytest
 
 from knowledge_graph import connection
 from knowledge_graph.config import Neo4jConfig
-from knowledge_graph.errors import Neo4jConfigurationError, Neo4jUnavailableError
+from knowledge_graph.errors import (
+    KnowledgeGraphError,
+    Neo4jConfigurationError,
+    Neo4jUnavailableError,
+)
 from knowledge_graph.integration import enrich_prediction, predict_image_with_knowledge
 from knowledge_graph.queries import relationship_query
 from knowledge_graph.repository import KnowledgeRepository
 from knowledge_graph.schema import SCHEMA_QUERIES
 from knowledge_graph.seed_data import seed_project_classes
+
+
+def test_tls_configuration_honors_curl_ca_bundle_and_keeps_system_roots(
+    tmp_path,
+    monkeypatch,
+):
+    bundle = tmp_path / "trusted-roots.pem"
+    bundle.write_text(
+        "-----BEGIN CERTIFICATE-----\ntrusted CA material\n",
+        encoding="ascii",
+    )
+    monkeypatch.delenv("NEO4J_CA_BUNDLE", raising=False)
+    monkeypatch.delenv("SSL_CERT_FILE", raising=False)
+    monkeypatch.setenv("CURL_CA_BUNDLE", str(bundle))
+
+    trust_source = connection._configure_tls_trust()
+
+    assert Path(os.environ["SSL_CERT_FILE"]) == bundle.resolve()
+    assert trust_source == "system CA store plus CURL_CA_BUNDLE"
+
+
+def test_explicit_neo4j_ca_bundle_takes_precedence_and_is_not_printed(
+    tmp_path,
+    monkeypatch,
+):
+    curl_bundle = tmp_path / "curl-roots.pem"
+    explicit_bundle = tmp_path / "neo4j-roots.pem"
+    curl_bundle.write_text("-----BEGIN CERTIFICATE-----\ncurl\n", encoding="ascii")
+    explicit_bundle.write_text(
+        "-----BEGIN CERTIFICATE-----\ntrusted CA\n",
+        encoding="ascii",
+    )
+    monkeypatch.setenv("CURL_CA_BUNDLE", str(curl_bundle))
+    monkeypatch.setenv("NEO4J_CA_BUNDLE", str(explicit_bundle))
+    monkeypatch.delenv("SSL_CERT_FILE", raising=False)
+
+    trust_source = connection._configure_tls_trust()
+
+    assert Path(os.environ["SSL_CERT_FILE"]) == explicit_bundle.resolve()
+    assert trust_source == "system CA store plus NEO4J_CA_BUNDLE"
+
+
+def test_tls_configuration_rejects_missing_or_non_pem_bundle(monkeypatch, tmp_path):
+    missing = tmp_path / "missing.pem"
+    monkeypatch.setenv("NEO4J_CA_BUNDLE", str(missing))
+    monkeypatch.delenv("SSL_CERT_FILE", raising=False)
+    monkeypatch.delenv("CURL_CA_BUNDLE", raising=False)
+
+    with pytest.raises(KnowledgeGraphError, match="readable file"):
+        connection._configure_tls_trust()
+
+    invalid = tmp_path / "invalid.pem"
+    invalid.write_text("not a certificate bundle", encoding="ascii")
+    monkeypatch.setenv("NEO4J_CA_BUNDLE", str(invalid))
+    with pytest.raises(KnowledgeGraphError, match="PEM certificates"):
+        connection._configure_tls_trust()
 
 
 class FakeSession:

@@ -55,6 +55,17 @@ $env:NEO4J_PASSWORD = "<your-password>"
 $env:NEO4J_DATABASE = "neo4j"
 ```
 
+The driver verifies Aura certificates against the operating-system CA store.
+Python's Neo4j driver does not automatically honor `CURL_CA_BUNDLE`; the
+connection command now bridges that setting to Python's standard
+`SSL_CERT_FILE` trust path when needed, while retaining Windows system roots
+and hostname verification. If your network intentionally inspects TLS, ask
+your administrator for its approved PEM root CA bundle and set
+`NEO4J_CA_BUNDLE` to that file. Only trust a CA obtained and verified through
+your organization's trusted channel; never add a certificate copied from a
+failed server connection. This option adds CA trust and does not disable
+certificate verification.
+
 For a local Neo4j instance, use its configured Bolt URI, for example
 `bolt://localhost:7687`. Aura's encrypted `neo4j+s://` URI is supported. URI
 credentials are rejected; credentials must be passed through environment

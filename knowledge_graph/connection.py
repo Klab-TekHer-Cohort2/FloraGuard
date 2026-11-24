@@ -1,7 +1,9 @@
 import argparse
+import os
 import socket
 import ssl
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any, Callable, Generator
 from urllib.parse import urlsplit
 
@@ -14,7 +16,44 @@ from knowledge_graph.errors import (
 from knowledge_graph.repository import KnowledgeRepository
 
 
+def _configure_tls_trust() -> str:
+    """Make configured PEM roots visible to Python's verified TLS defaults."""
+    bundle = (
+        os.environ.get("NEO4J_CA_BUNDLE")
+        or os.environ.get("SSL_CERT_FILE")
+        or os.environ.get("CURL_CA_BUNDLE")
+    )
+    if not bundle:
+        return "system CA store"
+
+    bundle_path = Path(bundle).expanduser()
+    try:
+        if not bundle_path.is_file():
+            raise OSError
+        with bundle_path.open("rb") as certificate_file:
+            has_pem_certificate = b"-----BEGIN CERTIFICATE-----" in certificate_file.read()
+    except OSError as error:
+        raise KnowledgeGraphError(
+            "The configured TLS CA bundle is not a readable file."
+        ) from error
+    if not has_pem_certificate:
+        raise KnowledgeGraphError(
+            "The configured TLS CA bundle must contain PEM certificates."
+        )
+
+    resolved_bundle = str(bundle_path.resolve())
+    if os.environ.get("NEO4J_CA_BUNDLE"):
+        os.environ["SSL_CERT_FILE"] = resolved_bundle
+        return "system CA store plus NEO4J_CA_BUNDLE"
+    if os.environ.get("SSL_CERT_FILE"):
+        return "system CA store plus SSL_CERT_FILE"
+
+    os.environ["SSL_CERT_FILE"] = resolved_bundle
+    return "system CA store plus CURL_CA_BUNDLE"
+
+
 def create_driver(config: Neo4jConfig) -> Any:
+    _configure_tls_trust()
     try:
         from neo4j import GraphDatabase
     except ImportError as error:
@@ -165,14 +204,22 @@ def diagnose_connection(
     encrypted = parsed_uri.scheme.endswith("+s")
     if encrypted:
         try:
+            trust_source = _configure_tls_trust()
             _verify_tls(host, port, timeout)
         except ssl.SSLCertVerificationError:
             statuses["TLS/SSL verification"] = (
-                "FAILED (certificate chain is not trusted; system CA "
-                "verification remains enabled)"
+                f"FAILED (certificate chain is not trusted by {trust_source}; "
+                "if TLS inspection is expected, configure its verified root "
+                "CA with NEO4J_CA_BUNDLE)"
             )
             statuses["Neo4j authentication"] = (
                 "NOT TESTED (blocked by TLS certificate verification)"
+            )
+            return _finish_diagnostics(statuses, output, "FAILED")
+        except KnowledgeGraphError as error:
+            statuses["TLS/SSL verification"] = f"FAILED ({error})"
+            statuses["Neo4j authentication"] = (
+                "NOT TESTED (TLS trust configuration failed)"
             )
             return _finish_diagnostics(statuses, output, "FAILED")
         except (ssl.SSLError, OSError):
@@ -181,7 +228,9 @@ def diagnose_connection(
                 "NOT TESTED (TLS handshake failed)"
             )
             return _finish_diagnostics(statuses, output, "FAILED")
-        statuses["TLS/SSL verification"] = "PASS (system CA and host verification)"
+        statuses["TLS/SSL verification"] = (
+            f"PASS ({trust_source} and host verification)"
+        )
     else:
         statuses["TLS/SSL verification"] = (
             "NOT APPLICABLE (unencrypted localhost URI)"
