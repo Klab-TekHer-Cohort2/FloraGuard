@@ -1,5 +1,8 @@
+import ssl
+
 import pytest
 
+from knowledge_graph import connection
 from knowledge_graph.config import Neo4jConfig
 from knowledge_graph.errors import Neo4jConfigurationError, Neo4jUnavailableError
 from knowledge_graph.integration import enrich_prediction, predict_image_with_knowledge
@@ -74,6 +77,8 @@ def test_neo4j_config_requires_credentials_and_redacts_password():
         "https://example.com",
         "neo4j+s://user:password@example.databases.neo4j.io",
         "neo4j+s:///missing-host",
+        "neo4j+ssc://example.databases.neo4j.io",
+        "neo4j://example.databases.neo4j.io",
     ],
 )
 def test_neo4j_config_rejects_invalid_or_embedded_credentials(uri):
@@ -87,6 +92,18 @@ def test_neo4j_config_rejects_invalid_or_embedded_credentials(uri):
         )
 
 
+def test_plaintext_uri_is_restricted_to_localhost():
+    config = Neo4jConfig.from_env(
+        {
+            "NEO4J_URI": "bolt://localhost:7687",
+            "NEO4J_USERNAME": "neo4j",
+            "NEO4J_PASSWORD": "secret",
+        }
+    )
+
+    assert config.uri == "bolt://localhost:7687"
+
+
 def test_neo4j_config_rejects_malformed_authority():
     with pytest.raises(Neo4jConfigurationError, match="NEO4J_URI"):
         Neo4jConfig.from_env(
@@ -96,6 +113,114 @@ def test_neo4j_config_rejects_malformed_authority():
                 "NEO4J_PASSWORD": "secret",
             }
         )
+
+
+def test_diagnostics_report_all_stages_without_credentials_when_unconfigured(
+    monkeypatch,
+):
+    for key in ("NEO4J_URI", "NEO4J_USERNAME", "NEO4J_PASSWORD", "NEO4J_DATABASE"):
+        monkeypatch.delenv(key, raising=False)
+    output = []
+
+    connected = connection.diagnose_connection(output=output.append)
+
+    assert connected is False
+    assert len(output) == 6
+    assert output[0].startswith("URI configuration: FAILED")
+    assert all("NOT TESTED" in line for line in output[1:5])
+    assert output[-1] == "Final connection status: FAILED"
+    assert "secret" not in "\n".join(output)
+
+
+def test_diagnostics_stop_before_authentication_when_tls_verification_fails(
+    monkeypatch,
+):
+    config = Neo4jConfig.from_env(
+        {
+            "NEO4J_URI": "neo4j+s://example.databases.neo4j.io",
+            "NEO4J_USERNAME": "neo4j",
+            "NEO4J_PASSWORD": "do-not-print-this",
+        }
+    )
+    monkeypatch.setattr(
+        connection,
+        "_resolve_addresses",
+        lambda _host, _port: [(None, None, None, None, None)],
+    )
+    monkeypatch.setattr(connection, "_check_tcp", lambda _addresses, _timeout: None)
+
+    def fail_tls(_host, _port, _timeout):
+        raise ssl.SSLCertVerificationError("untrusted chain")
+
+    monkeypatch.setattr(connection, "_verify_tls", fail_tls)
+    monkeypatch.setattr(
+        connection,
+        "create_driver",
+        lambda _config: pytest.fail("Authentication must not run after TLS failure."),
+    )
+    output = []
+
+    connected = connection.diagnose_connection(config, output=output.append)
+
+    assert connected is False
+    assert "TLS/SSL verification: FAILED" in output[3]
+    assert "Neo4j authentication: NOT TESTED" in output[4]
+    assert "do-not-print-this" not in "\n".join(output)
+
+
+def test_diagnostics_report_success_after_verified_tls_and_database_query(monkeypatch):
+    config = Neo4jConfig.from_env(
+        {
+            "NEO4J_URI": "neo4j+s://example.databases.neo4j.io",
+            "NEO4J_USERNAME": "neo4j",
+            "NEO4J_PASSWORD": "secret",
+        }
+    )
+
+    class FakeResult:
+        def single(self):
+            return {"ok": 1}
+
+    class FakeSession:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, _exc_type, _exc_value, _traceback):
+            return False
+
+        def run(self, query):
+            assert query == "RETURN 1 AS ok"
+            return FakeResult()
+
+    class FakeDriver:
+        def verify_authentication(self):
+            return True
+
+        def verify_connectivity(self):
+            return None
+
+        def session(self, database):
+            assert database == "neo4j"
+            return FakeSession()
+
+        def close(self):
+            return None
+
+    monkeypatch.setattr(
+        connection,
+        "_resolve_addresses",
+        lambda _host, _port: [(None, None, None, None, None)],
+    )
+    monkeypatch.setattr(connection, "_check_tcp", lambda _addresses, _timeout: None)
+    monkeypatch.setattr(connection, "_verify_tls", lambda _host, _port, _timeout: None)
+    monkeypatch.setattr(connection, "create_driver", lambda _config: FakeDriver())
+    output = []
+
+    connected = connection.diagnose_connection(config, output=output.append)
+
+    assert connected is True
+    assert all(line.endswith("PASS") or "PASS (" in line for line in output)
+    assert "secret" not in "\n".join(output)
 
 
 def test_relationship_query_uses_allowlisted_identifiers_and_parameter_values():

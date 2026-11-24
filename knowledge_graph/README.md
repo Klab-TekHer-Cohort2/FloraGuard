@@ -60,9 +60,13 @@ For a local Neo4j instance, use its configured Bolt URI, for example
 credentials are rejected; credentials must be passed through environment
 variables.
 Schema constraints use Neo4j 5+ Cypher syntax.
+The configuration rejects Aura hosts without `neo4j+s://`, remote plaintext
+URIs, and the `+ssc` scheme that skips normal certificate authority
+verification.
 
-Test URI parsing, driver availability, connectivity, authentication, and
-database access without displaying credentials:
+The connection diagnostic reports URI configuration, DNS, TCP, TLS
+certificate verification, authentication, and final database access without
+printing the URI, username, or password:
 
 ```powershell
 python -m knowledge_graph.connection
