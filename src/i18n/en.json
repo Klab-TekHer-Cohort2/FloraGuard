@@ -1,0 +1,480 @@
+{
+  "_meta": "FloraGuard English translations. All keys must have a matching entry in rw.json.",
+
+  "app": {
+    "name": "FloraGuard",
+    "tagline": "Spot rose problems early.",
+    "disclaimer": "FloraGuard gives guidance. Confirm serious cases with an agronomist.",
+    "demoData": "Demo data — not real",
+    "demoDataDismiss": "Dismiss"
+  },
+
+  "nav": {
+    "home": "Home",
+    "check": "Check",
+    "map": "Map",
+    "alerts": "Alerts",
+    "overview": "Overview",
+    "reports": "Reports",
+    "settings": "Settings",
+    "switchRole": "Switch role",
+    "logoAlt": "FloraGuard logo — go to home"
+  },
+
+  "header": {
+    "languageSwitcher": "Change language",
+    "themeSwitcher": "Toggle dark mode",
+    "themeLight": "Switch to light mode",
+    "themeDark": "Switch to dark mode",
+    "roleLabel": "Role",
+    "roleGrowerShort": "Grower",
+    "roleManagerShort": "Manager"
+  },
+
+  "offline": {
+    "banner": "You are offline. Changes will sync when you reconnect.",
+    "savedToQueue": "Saved — will send when back online."
+  },
+
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong.",
+    "retry": "Try again",
+    "dismiss": "Dismiss",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "back": "Go back",
+    "close": "Close",
+    "readMore": "Read more",
+    "viewAll": "View all",
+    "markRead": "Mark as read",
+    "markAllRead": "Mark all as read",
+    "unread": "Unread",
+    "read": "Read",
+    "ago": "ago",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "hoursAgo": "{{n}} h ago",
+    "minutesAgo": "{{n}} min ago",
+    "daysAgo": "{{n}} d ago",
+    "dateFormat": "{{date}}",
+    "learnMore": "Learn more",
+    "getStarted": "Get started",
+    "skip": "Skip",
+    "yes": "Yes",
+    "no": "No",
+    "or": "or",
+    "and": "and",
+    "zone": "Zone",
+    "confidence": "Confidence",
+    "severity": "Severity",
+    "problem": "Problem",
+    "status": "Status",
+    "date": "Date",
+    "actions": "Actions",
+    "search": "Search",
+    "filter": "Filter",
+    "clearFilters": "Clear filters",
+    "sortBy": "Sort by",
+    "all": "All",
+    "none": "None",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "dismissed": "Dismissed",
+    "healthy": "Healthy",
+    "unknown": "Unknown",
+    "optional": "Optional",
+    "required": "Required",
+    "riskLevel": {
+      "label": "Risk level",
+      "low": "Low risk",
+      "medium": "Medium risk",
+      "high": "High risk",
+      "unknown": "Unknown risk",
+      "ariaLabel": "Risk level: {{level}}"
+    },
+    "severityLevel": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "unknown": "Unknown"
+    },
+    "problems": {
+      "healthy": "Healthy",
+      "spiderMite": "Spider mite",
+      "thrips": "Thrips",
+      "powderyMildew": "Powdery mildew",
+      "downyMildew": "Downy mildew",
+      "greyMould": "Grey mould (Botrytis)",
+      "blackSpot": "Black spot"
+    }
+  },
+
+  "welcome": {
+    "hero": {
+      "headline": "Spot rose problems early. Protect your neighbours.",
+      "subheadline": "Take a photo. Get an answer. Warn nearby farms.",
+      "getStarted": "Get started",
+      "howItWorks": "How it works",
+      "logoAlt": "FloraGuard — rose and shield emblem"
+    },
+    "chooseRole": {
+      "title": "Who are you?",
+      "subtitle": "Choose your role to get started.",
+      "grower": {
+        "title": "I grow or scout roses",
+        "description": "Check a photo and get warnings for my area."
+      },
+      "manager": {
+        "title": "I am an agronomist, farm manager or officer",
+        "description": "See reports and hotspots across the area."
+      }
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "step1": {
+        "title": "Take a photo",
+        "description": "Photograph an affected leaf, bud or stem."
+      },
+      "step2": {
+        "title": "AI checks it",
+        "description": "The app identifies the problem in seconds."
+      },
+      "step3": {
+        "title": "Your area is mapped",
+        "description": "The result is added to the community risk map."
+      },
+      "step4": {
+        "title": "Neighbours get warned",
+        "description": "Nearby farms get an alert to stay ahead."
+      }
+    },
+    "whyItMatters": {
+      "title": "Why it matters",
+      "card1": {
+        "title": "Flowers are sold on appearance",
+        "description": "Even minor damage reduces quality and market value."
+      },
+      "card2": {
+        "title": "Pests spread between nearby farms",
+        "description": "Early detection in one field can protect many others."
+      },
+      "card3": {
+        "title": "Early warning protects quality",
+        "description": "Acting fast keeps your roses healthy and export-ready."
+      }
+    },
+    "whoItIsFor": {
+      "title": "Who it is for",
+      "grower": {
+        "title": "Growers and scouts",
+        "description": "Photograph problems and receive alerts for your area."
+      },
+      "manager": {
+        "title": "Farm managers and agronomists",
+        "description": "Review reports, confirm cases, and advise on action."
+      },
+      "officer": {
+        "title": "NAEB and extension officers",
+        "description": "Monitor hotspots and coordinate support across the region."
+      }
+    },
+    "builtForRwanda": {
+      "title": "Built for Rwandan rose growers",
+      "subtitle": "Starting with rose-growing areas in Rwanda.",
+      "mapAlt": "Stylised outline map of Rwanda"
+    },
+    "trust": {
+      "title": "Your data is handled with care",
+      "disclaimer": "FloraGuard gives guidance. Confirm serious cases with an agronomist.",
+      "privacy": "Your farm's location is never shared publicly. The map shows area-level zones only.",
+      "version": "Version"
+    }
+  },
+
+  "grower": {
+    "home": {
+      "title": "My area",
+      "greeting": "Hello",
+      "dashboardSubtitle": "A clear picture of rose health in your community.",
+      "areaRisk": "Area risk",
+      "riskNeedsAttention": "One or more nearby zones need attention.",
+      "riskModerate": "Some nearby zones show moderate risk. Keep monitoring.",
+      "riskLooksCalm": "Stay informed with the latest community outlook.",
+      "zonesMonitored": "Zones monitored",
+      "activeWarnings": "Recent warnings",
+      "highRiskZones": "High-risk zones",
+      "highestRiskZone": "Highest risk",
+      "monitoringNote": "Community outlook",
+      "checkSubtitle": "Take a photo to check for common rose problems.",
+      "communityUpdates": "Community updates",
+      "areaRiskLoading": "Checking area risk…",
+      "checkButton": "Check my roses",
+      "recentAlerts": "Recent alerts",
+      "noAlerts": "No alerts right now",
+      "noAlertsMessage": "Your area has no active warnings. Keep checking in.",
+      "viewMap": "View community map",
+      "viewAllAlerts": "View all alerts"
+    },
+    "checkRoses": {
+      "title": "Check my roses",
+      "uploadTitle": "Take or upload a photo",
+      "uploadInstruction": "Photograph a leaf, bud or stem that looks wrong.",
+      "uploadButton": "Choose photo",
+      "uploadDragDrop": "or drag and drop here",
+      "uploadFileSizeHint": "Max 10 MB · JPG or PNG",
+      "uploadAccept": "image/*",
+      "retake": "Retake photo",
+      "analyse": "Analyze & submit report",
+      "analysing": "Checking your roses…",
+      "analysingSubtitle": "This takes a few seconds.",
+      "resultTitle": "Here is what we found",
+      "lowConfidenceTitle": "Not sure — please ask an expert",
+      "lowConfidenceMessage": "The photo was hard to analyse. Show it to a local agronomist.",
+      "lowConfidenceSuggestion": "No diagnosis was confirmed.",
+      "confidence": "AI confidence",
+      "confidenceUnavailable": "Confidence unavailable.",
+      "advice": "Area risk factors",
+      "submitToMap": "Submit report",
+      "submitSuccess": "Report saved to FloraGuard.",
+      "submitError": "Could not submit report. Please try again.",
+      "offlineAnalysisTitle": "Offline — no diagnosis yet",
+      "offlineAnalysisMessage": "Connect to FloraGuard to analyze this photo. You can save the report now for upload when your connection returns.",
+      "offlineQueueButton": "Save report for upload",
+      "checkAnother": "Check another photo",
+      "discardConfirm": "Discard this photo and start over?",
+      "discardYes": "Yes, discard",
+      "discardNo": "Keep photo",
+      "errorTitle": "Analysis failed",
+      "errorMessage": "We could not analyse your photo. Please try again.",
+      "errorRetry": "Try again",
+      "offlineQueued": "Saved on this device. It will upload when your connection returns.",
+      "offlineSynced": "Uploaded {{count}} saved report(s).",
+      "offlineSyncFailed": "Could not upload saved reports. They remain on this device and will retry when you reconnect.",
+      "analysisUnavailableTitle": "Diagnosis unavailable",
+      "analysisUnavailableMessage": "The report was saved, but no AI model is connected. No diagnosis or confidence score is available.",
+      "disclaimer": "FloraGuard gives guidance. Confirm serious cases with an agronomist.",
+      "ariaUploadArea": "Photo upload area. Tap to select a photo.",
+      "ariaImagePreview": "Selected photo preview",
+      "ariaAnalysing": "Analysing your photo, please wait",
+      "ariaResult": "Analysis result"
+    },
+    "map": {
+      "title": "Community map",
+      "subtitle": "Risk levels across your area",
+      "legend": "Risk key",
+      "legendLow": "Low risk",
+      "legendMedium": "Medium risk",
+      "legendHigh": "High risk",
+      "popupZone": "Zone",
+      "popupReports": "reports in the last 30 days",
+      "popupMainProblems": "Main problems",
+      "popupLastUpdate": "Updated",
+      "popupWeather": "Weather",
+      "popupTemp": "{{temp}}°C",
+      "popupHumidity": "{{humidity}}% humidity",
+      "loading": "Loading map…",
+      "ariaMapContainer": "Community risk map",
+      "ariaZonePolygon": "{{name}} — {{riskLevel}} risk",
+      "noData": "Map data not available.",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out"
+    },
+    "alerts": {
+      "title": "My alerts",
+      "subtitle": "Warnings for your area",
+      "empty": "No alerts",
+      "emptyMessage": "No warnings right now. We will notify you when something comes up.",
+      "markAllRead": "Mark all as read",
+      "markRead": "Mark as read",
+      "ariaUnread": "Unread alert",
+      "unreadCount": "{{n}} unread alert",
+      "unreadCountPlural": "{{n}} unread alerts",
+      "whatToDo": "What to do",
+      "zone": "Zone {{zone}}"
+    }
+  },
+
+  "dashboard": {
+    "overview": {
+      "title": "Overview",
+      "subtitle": "Area summary for the last 7 days",
+      "totalReports": "Total reports",
+      "confirmedCases": "Confirmed cases",
+      "highRiskZones": "High-risk zones",
+      "unreadAlerts": "Unread alerts",
+      "reportsByDay": "Reports by day",
+      "reportsByDaySubtitle": "Last 14 days, grouped by severity",
+      "problemBreakdown": "Problem breakdown",
+      "recentHighRisk": "Recent high and medium reports",
+      "loadingKPIs": "Loading summary…",
+      "loadingChart": "Loading chart…"
+    },
+    "map": {
+      "title": "Area map",
+      "subtitle": "Zone risk levels",
+      "filterLabel": "Filter by risk",
+      "filterAll": "All zones",
+      "filterHigh": "High risk",
+      "filterMedium": "Medium risk",
+      "filterLow": "Low risk",
+      "zonesPanel": "Zones",
+      "zonePanelAriaLabel": "Zone list",
+      "flyToZone": "Go to zone on map",
+      "legend": "Risk key",
+      "legendLow": "Low risk",
+      "legendMedium": "Medium risk",
+      "legendHigh": "High risk",
+      "ariaMapContainer": "Dashboard area risk map",
+      "ariaZonePolygon": "{{name}} — {{riskLevel}} risk"
+    },
+    "reports": {
+      "title": "Reports",
+      "subtitle": "All inspection reports",
+      "search": "Search reports…",
+      "filterProblem": "Problem",
+      "filterSeverity": "Severity",
+      "filterZone": "Zone",
+      "filterStatus": "Status",
+      "sortDate": "Date",
+      "sortSeverity": "Severity",
+      "sortConfidence": "Confidence",
+      "confirmAction": "Confirm",
+      "dismissAction": "Dismiss",
+      "confirmModalTitle": "Confirm this report?",
+      "confirmModalMessage": "Are you sure you want to confirm this case? This will update the area risk map.",
+      "confirmModalYes": "Yes, confirm",
+      "confirmModalNo": "Cancel",
+      "dismissModalTitle": "Dismiss this report?",
+      "dismissModalMessage": "Are you sure you want to dismiss this report?",
+      "dismissModalYes": "Yes, dismiss",
+      "dismissModalNo": "Cancel",
+      "empty": "No reports found",
+      "emptyMessage": "Try adjusting your filters.",
+      "pagination": "Page {{page}} of {{total}}",
+      "paginationPrev": "Previous page",
+      "paginationNext": "Next page",
+      "perPage": "Per page"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "subtitle": "Community warnings",
+      "timeline": "Alert timeline",
+      "timelineSubtitle": "Alerts per day, last 14 days",
+      "filterRisk": "Risk level",
+      "filterRead": "Read status",
+      "filterAll": "All",
+      "filterUnread": "Unread",
+      "filterRead2": "Read",
+      "bulkMarkRead": "Mark all visible as read",
+      "empty": "No alerts found",
+      "emptyMessage": "No warnings match your current filters."
+    },
+    "settings": {
+      "title": "Settings",
+      "language": "Language",
+      "languageEN": "English",
+      "languageRW": "Kinyarwanda",
+      "theme": "Appearance",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "role": "Your role",
+      "roleGrowerLabel": "Grower or scout",
+      "roleManagerLabel": "Farm manager, agronomist or officer",
+      "switchRole": "Switch role",
+      "switchRoleConfirm": "Switch to a different role and go back to the welcome screen?",
+      "about": "About FloraGuard",
+      "aboutLink": "About this app",
+      "version": "Version"
+    }
+  },
+
+  "about": {
+    "title": "About FloraGuard",
+    "intro": "FloraGuard helps rose growers in Rwanda detect pests and diseases early and warn nearby farms.",
+    "howItWorks": "How it works",
+    "disclaimer": "FloraGuard gives guidance. Confirm serious cases with an agronomist.",
+    "privacy": "Privacy",
+    "privacyDetail": "The map shows zone-level data only. Farm names and precise locations are never shared publicly.",
+    "version": "Version",
+    "backHome": "Go to home"
+  },
+
+  "notFound": {
+    "title": "Page not found",
+    "message": "The page you are looking for does not exist.",
+    "backHome": "Go to home"
+  },
+
+  "emptyState": {
+    "noReports": {
+      "title": "No reports yet",
+      "message": "Take a photo to check your roses and add the first report.",
+      "action": "Check my roses"
+    },
+    "noAlerts": {
+      "title": "No alerts",
+      "message": "Your area has no active warnings right now.",
+      "action": "View map"
+    },
+    "noZones": {
+      "title": "No zones loaded",
+      "message": "Map zone data could not be loaded.",
+      "action": "Try again"
+    }
+  },
+
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Cannot reach the server. Check your connection.",
+    "uploadFailed": "Photo upload failed. Please try again.",
+    "analyseFailed": "Analysis failed. Please try again.",
+    "loadFailed": "Data could not be loaded. Please try again.",
+    "invalidImage": "Please choose a valid image file (JPG or PNG).",
+    "imageTooLarge": "Image is too large. Please choose a file under 10 MB.",
+    "offline": "You are offline. This action will work when you reconnect.",
+    "ariaError": "Error message"
+  },
+
+  "aria": {
+    "loading": "Loading, please wait",
+    "loadingData": "Loading data",
+    "uploading": "Uploading photo",
+    "analysing": "Analysing photo",
+    "closeModal": "Close dialog",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "expandZone": "Show zone details",
+    "collapseZone": "Hide zone details",
+    "alertUnread": "Unread alert",
+    "alertRead": "Read alert",
+    "skipToContent": "Skip to main content",
+    "mainNav": "Main navigation",
+    "bottomNav": "Bottom navigation",
+    "mapControls": "Map controls",
+    "riskBadge": "Risk level: {{level}}",
+    "severityMeter": "Severity: {{value}}%",
+    "confidenceMeter": "AI confidence: {{value}}%",
+    "unreadBadge": "{{n}} unread alerts",
+    "photoPreview": "Selected photo preview",
+    "dismissBanner": "Dismiss banner"
+  },
+
+  "toast": {
+    "reportShared": "Report shared with the community.",
+    "reportSaved": "Saved — will send when back online.",
+    "settingsSaved": "Settings saved.",
+    "markedRead": "Alert marked as read.",
+    "allMarkedRead": "All alerts marked as read.",
+    "caseConfirmed": "Case confirmed.",
+    "caseDismissed": "Report dismissed.",
+    "error": "Something went wrong. Please try again.",
+    "offline": "You are offline."
+  },
+
+  "language": {
+    "en": "English",
+    "rw": "Kinyarwanda"
+  }
+}

@@ -39,9 +39,9 @@ The default configurable confidence threshold is `0.60` via
 
 The predictor raises clear errors for a missing model, missing or corrupted
 images, unsupported formats, and invalid model output. A trained model is
-required for real predictions. Until one is trained and activated, keep the
-backend's own mock predictor selected; do not report mock output as a model
-prediction.
+required for real predictions. Until one is trained and activated, leave
+`FLORAGUARD_PREDICTOR` unset; the backend reports an unavailable, uncertain
+prediction instead of inventing a model result.
 
 ## Model selection
 
@@ -63,7 +63,7 @@ split; it does not create a sample image.
 The active model is selected by `models/active_model.json`. Set
 `FLORAGUARD_MODEL_PATH` to select a specific version instead. Install the AI
 dependencies from the project root with `python -m pip install -r requirements.txt`.
-See [README.md](./README.md) for dataset preparation and training, and
+See [AI_README.md](./AI_README.md) for the AI workspace overview and
 [DATASET.md](./DATASET.md) for provenance and quality requirements.
 
 Training supports CPU without CUDA or NVIDIA dependencies. On Google Colab,
@@ -74,6 +74,15 @@ No rose dataset or trained model is currently included. Severity is a
 prototype visual-coverage estimate, not an expert-validated diagnosis.
 Image classification only identifies what is visible in a photograph; it does
 not calculate community or area-level risk.
+
+## FloraGuard app integration
+
+The FastAPI backend is in `backend/` and the React PWA is in `src/`. Start the
+backend from the project root with
+`python -m uvicorn backend.app.main:app --reload --port 8000`. Only set
+`FLORAGUARD_PREDICTOR=predictor:predict_image` in `backend/.env` after a model
+has been trained and activated. The optional Neo4j layer is separate from this
+standard predictor contract; see [knowledge_graph/README.md](./knowledge_graph/README.md).
 
 ## Optional Neo4j knowledge layer
 

@@ -1,268 +1,87 @@
-# FloraGuard AI and data starter
+# FloraGuard
 
-This project contains Member 1's image-classification and data pipeline. The
-classifier predicts what is visible in a rose photograph; it does not calculate
-community outbreak risk. Severity is a separate, explicitly experimental
-visual-coverage estimate until expert-labelled severity data is available.
+FloraGuard is a mobile-first rose-health project with a React PWA, a FastAPI reporting/risk backend, and an AI/data pipeline. Growers can submit rose photos and view community alerts; managers can review reports and area risk summaries. A trained model and reviewed dataset are not included. Without an active model, the backend reports an unknown diagnosis rather than inventing one. Severity and area risk indicators are prototypes, not expert-validated predictions.
 
-## Current project status
+## Quick start
 
-- The supported classes are `healthy`, `spider_mite`, `thrips`,
-  `powdery_mildew`, `downy_mildew`, `grey_mould`, and `black_spot`.
-- The existing model design is MobileNetV2 transfer learning, initialized from
-  ImageNet weights, with a 224 x 224 input and a seven-class softmax output.
-- No rose dataset, trained weights, or prior evaluation results were present
-  when the AI pipeline was inspected. No photographs, metrics, or expert review
-  claims have been fabricated.
-- The source-manifest template currently has zero image rows. Add real,
-  reviewed images and provenance before attempting a split or training.
-- Until a model is trained and activated, an integrating backend should keep
-  its own marked mock predictor.
+Requires Node.js 18 or newer. The backend requires Python 3.10+; TensorFlow training/inference targets Python 3.11.
 
-See [DATASET.md](./DATASET.md) for collection/provenance requirements and
-[AI_INTEGRATION.md](./AI_INTEGRATION.md) for the predictor contract.
-
-## AI/Data workspace layout
-
-This repository itself is the AI/Data workspace; the reusable implementations
-remain at the root rather than being duplicated under another `ai_ml/src`
-tree:
-
-```text
-data/rose/source/      genuine labelled source images (currently empty)
-data/rose/             source manifest and generated group-aware split manifest
-models/                versioned model and evaluation outputs (currently empty)
-experiments/           append-only experiment log
-notebooks/             Colab/VS Code training notebook
-reports/dataset/       generated validation report and image review CSV
-tests/                 AI/data pipeline tests
-knowledge_graph/       optional Neo4j taxonomy and prediction layer
+```sh
+npm.cmd install
+npm.cmd run dev
 ```
 
-`dataset_tools.py`, `train_model.py`, `predictor.py`, `severity.py`, and
-`activate_model.py` are the canonical data, training, inference, severity, and
-model-selection modules. `knowledge_graph/` contains an optional Neo4j
-knowledge layer; the default predictor and training pipeline remain
-independent of it. Backend, frontend, risk-engine, USSD, and IVR applications
-are not part of this AI workspace.
-
-## Install
-
-Use Python supported by TensorFlow (the current project targets Python 3.11):
+Run the frontend from the project root. Start the backend from a second terminal at the project root:
 
 ```powershell
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+python -m pip install -r backend\requirements.txt
+Copy-Item backend\.env.example backend\.env
+python -m uvicorn backend.app.main:app --reload --port 8000
 ```
 
-The root requirements provide TensorFlow/Keras, NumPy, and Pillow. Training
-downloads MobileNetV2 ImageNet weights on first use if they are not cached, so
-that first training run needs network access.
+Open the Vite URL printed in the first terminal. The API docs are at `http://127.0.0.1:8000/docs`. Build the frontend with `npm.cmd run build`. Backend tests: `python -m pytest -q backend\tests`.
 
-Neo4j is not required for the classifier. To use the optional graph layer,
-install [requirements-neo4j.txt](./requirements-neo4j.txt) separately and
-follow [knowledge_graph/README.md](./knowledge_graph/README.md). The high-level
-responsibilities and data flow are described in
-[AI_ARCHITECTURE.md](./AI_ARCHITECTURE.md).
+## Backend and frontend
 
-## Prepare and check the dataset
+The FastAPI backend in [`backend/`](./backend/README.md) provides SQLite-backed reports, a predictor adapter, Open-Meteo weather lookup, one shared rule-based risk engine, alerts, and provider-independent USSD/IVR APIs. The frontend's `src/api.js` uses `http://127.0.0.1:8000/api` by default; override it with `VITE_API_BASE_URL` in the root `.env` file when needed.
 
-Place genuine, correctly labelled images under `data/rose/source/<class>/`.
-Use only the seven supported class folder names. Do not copy test fixtures or
-sample/demo images into the real training dataset.
+## AI and data pipeline
 
-For each image, add a row to `data/rose/source_manifest.csv`. Use a stable
-`group_id` for every photo of the same plant or photo session. Record source
-type, source name, licence, source URL where applicable, and review status.
-The source manifest is not proof of expert validation; record the actual status.
+The AI/data pipeline is integrated at the project root: `predictor.py` provides the backend-compatible `predict_image(path)` function; `dataset_tools.py`, `train_model.py`, `severity.py`, and `activate_model.py` cover dataset validation, training, prototype visual severity, and model selection. See the preserved [AI workspace guide](./AI_README.md) and follow [`AI_INTEGRATION.md`](./AI_INTEGRATION.md), [`DATASET.md`](./DATASET.md), and [`TRAINING.md`](./TRAINING.md) before configuring a model.
 
-Generate quality reports without changing or deleting any images:
+No rose photos, trained model weights, or evaluation results are included. The checked-in source manifest is empty. Install AI dependencies with `python -m pip install -r requirements.txt` in a Python 3.11 environment. After adding and reviewing real data, training, and activating a model, set `FLORAGUARD_PREDICTOR=predictor:predict_image` in `backend/.env` and run Uvicorn from the project root. Optionally select a model with `FLORAGUARD_MODEL_PATH`.
 
-```powershell
-python dataset_tools.py validate `
-  --data-dir data/rose/source `
-  --output-dir reports/dataset
+The cloned AI workspace also contains an optional Neo4j knowledge layer. It is not required by the app or the standard predictor; see [AI_ARCHITECTURE.md](./AI_ARCHITECTURE.md) and [knowledge_graph/README.md](./knowledge_graph/README.md) before installing `requirements-neo4j.txt`.
+
+## Project structure
+
+```text
+src/
+  components/       Shared controls, navigation, map, and feedback
+  context/          Theme, role, and backend alert state
+  hooks/            Offline, role, and alert hooks
+  i18n/             English and Kinyarwanda dictionaries
+  pages/            Grower and dashboard screens
+backend/
+  app/              FastAPI, SQLite, predictor adapter, weather, risk and channel services
+  tests/            Backend API and risk tests
+data/                Source manifest and labelled-image folders
+models/              Activated/versioned model outputs (weights are not included)
+notebooks/            Model training notebook
+tests/                AI/data pipeline tests
+predictor.py          Backend-compatible AI inference entry point
+train_model.py        Training and evaluation workflow
+dataset_tools.py      Dataset validation and split tools
+requirements.txt      AI/data Python dependencies
 ```
 
-The JSON report and CSV review sheet show image counts and dimensions,
-corrupted/unsupported files, exact and possible near-duplicates, small images,
-class imbalance, and a heuristic blur flag. Review flagged images manually;
-the blur screen is not an expert judgement.
+## Design system
 
-Create a reproducible 70/15/15 group-aware split manifest:
+The interface uses Plus Jakarta Sans for headings and Inter for body text. Design tokens are CSS custom properties in `src/index.css`; the app supports light and dark themes. See [design-notes.md](./design-notes.md) for contrast checks, typography, spacing, motion, and privacy decisions.
 
-```powershell
-python dataset_tools.py split `
-  --data-dir data/rose `
-  --source-dir data/rose/source `
-  --source-manifest data/rose/source_manifest.csv `
-  --output data/rose/split_manifest.csv `
-  --seed 42
-```
+## Languages
 
-`--source-manifest` must be the CSV **file**, not the `data/rose/` directory.
-The checked-in file has the correct header but currently has zero image rows.
-Add one row per source image using the columns described in [DATASET.md](./DATASET.md).
+The language selector supports English (`src/i18n/en.json`) and Kinyarwanda (`src/i18n/rw.json`). To add a language:
 
-This implementation intentionally writes paths and assignments to
-`data/rose/split_manifest.csv`; it does not copy photos or create
-`train/validation/test` directories. The trainer reads that manifest directly,
-avoiding duplicate image files. It refuses to split invalid data or flagged
-images not explicitly reviewed, and requires enough distinct groups for every
-class to appear in each split. Its JSON summary contains actual per-class
-counts for train, validation, and test. Exact and near-duplicate photos are
-kept in the same split. The test set is read only after training finishes; it
-is never used for fitting or callbacks. Keep related photos in one `group_id`
-to prevent leakage.
+1. Copy the nested key structure from `en.json` into a new locale JSON file.
+2. Translate every user-facing string and add the locale to `src/i18n/useTranslation.js`.
+3. Keep the key sets identical and test the screens using the new language.
+4. Ask a fluent native speaker to review translations marked `TODO-native-review`; do not publish those placeholder values as final copy.
 
-## Train and evaluate
+The selected language is stored as `fg_lang` in local storage.
 
-```powershell
-python train_model.py `
-  --data-dir data/rose `
-  --output-dir models `
-  --version v1 `
-  --dataset-version rose-data-1 `
-  --seed 42 `
-  --epochs 30 `
-  --batch-size 32 `
-  --confidence-threshold 0.60
-```
+## Frontend API integration
 
-Training requires examples for every class in the train, validation, and test
-parts of the split manifest.
-`train_model.py` uses MobileNetV2 transfer learning, training-only random
-horizontal flips, small rotations/zooms/brightness changes, early stopping,
-and validation-loss checkpointing. The best validation checkpoint is evaluated
-once on the held-out test split.
+The frontend calls `POST /api/reports`, `GET /api/reports`, `GET /api/map/reports`, and `GET /api/alerts`. API errors are shown to the user rather than replaced with synthetic success data. Photo submissions are saved by the backend during analysis; queued offline photos upload when the app reconnects. A missing model returns an unknown diagnosis with no confidence score.
 
-Each model version is written to distinct files such as
-`models/floraguard_v1.keras` and `models/floraguard_v1_metadata.json`.
-Existing versions are never overwritten. Evaluation JSON includes actual
-accuracy, per-class precision/recall/F1, confusion matrix, test count, and
-training history. The script also writes a confusion-matrix PNG and an
-incorrect-prediction CSV with image path, actual/predicted classes, and
-confidence plus blank `possible_cause` and `review_notes` fields for human
-analysis (for example lighting, blur, early symptoms, similar diseases, camera
-angle, background, or a class with too few examples). The pipeline does not
-guess a cause. Do not quote results until they have been produced from the
-project's own reviewed test data.
+When enabled, the backend imports the root predictor through `FLORAGUARD_PREDICTOR=predictor:predict_image`. Keep this unset until dependencies are installed and a reviewed, activated model is available. The AI classifier's confidence is separate from its prototype visual-severity estimate and the backend's community risk score.
 
-Every successful run appends its configuration and measured validation/test
-metrics to `experiments/experiments.jsonl`; it never replaces prior records. See
-[MODEL.md](./MODEL.md) for the architecture and
-[TRAINING.md](./TRAINING.md) for the end-to-end workflow.
+## PWA notes
 
-Optional second-stage fine-tuning unfreezes up to 30 upper MobileNetV2 layers,
-keeps Batch Normalization frozen, and uses Adam at `1e-5` by default. It runs
-only when `--fine-tune-epochs` is greater than zero, and its checkpoint is
-selected only if validation loss improves over the frozen-head checkpoint.
-For example:
+The root `manifest.json` and `sw.js` provide installability and a basic offline app shell. Offline photo submissions are queued in browser local storage and uploaded when connectivity returns. A production release should add durable queue management, consent, and secure storage appropriate to the data.
 
-```powershell
-python train_model.py --data-dir data/rose --output-dir models --manifest data/rose/split_manifest.csv --version v2 --dataset-version rose-data-1 --seed 42 --epochs 30 --batch-size 32 --learning-rate 0.001 --fine-tune-epochs 10 --fine-tune-layers 30 --fine-tune-learning-rate 0.00001
-```
+## Important configuration
 
-Review the artifacts, then activate the version explicitly without retraining:
-
-```powershell
-python activate_model.py --model models
-```
-
-The directory form works when it contains exactly one `floraguard_*.keras`
-version. If it contains multiple versions, specify the exact model file, for
-example `--model models/floraguard_v2.keras`.
-
-The predictor reads the selected version from `models/active_model.json`.
-Alternatively, set `FLORAGUARD_MODEL_PATH=models/floraguard_v1.keras` to select
-a particular model. `train_model.py --activate` is also available when you
-explicitly want a newly trained version to become active immediately.
-
-The trainer also accepts an existing `train/validation/test` folder layout when
-no split manifest exists. In that case, the group provenance cannot be checked;
-the group-aware manifest workflow above is preferred.
-
-## Predict a photograph
-
-```python
-from predictor import predict_rose_problem, predict_image
-
-details = predict_rose_problem("path/to/rose.jpg")
-print(details)
-
-# The backend contract:
-backend_result = predict_image("path/to/rose.jpg")
-print(backend_result)
-```
-
-The backend function returns `problem`, `severity`, `confidence`, and
-`model_version`. `problem` becomes `uncertain` when the highest class
-probability is below the configurable `CONFIDENCE_THRESHOLD` (default `0.60`).
-For low-confidence results the severity is `unknown`. The detailed prediction
-also includes the top candidate and whether the model was uncertain.
-The initial `0.60` threshold is a prototype starting point, not calibrated on
-FloraGuard images; tune it using validation data and expert review.
-
-The classifier's confidence is not disease severity. Since no expert severity
-labels currently exist, severity uses an isolated prototype visual-coverage
-heuristic and reports `severity_source: "prototype_visual_coverage"` when it
-can estimate from the image. See [DATASET.md](./DATASET.md) and
-[AI_INTEGRATION.md](./AI_INTEGRATION.md) for limitations.
-Detailed output includes a probability for each supported class. These
-probabilities and the prototype severity estimate are not agronomist diagnoses.
-
-## Tests
-
-From the project root, using an environment with the root requirements and
-pytest installed:
-
-```powershell
-python -m pytest -q tests
-```
-
-The tests use a fake model for predictor contract/threshold checks and generated
-temporary images for data-pipeline checks. They do not train a model and do not
-produce model-performance metrics.
-
-After real images have been split and a trained model activated, this smoke test
-selects an actual image from the test split and runs the predictor:
-
-```powershell
-python test_predictor.py
-```
-
-It reports the selected image, problem, confidence, severity, and model version.
-It fails clearly if the split manifest or active trained model is missing.
-
-The optional reusable training notebook is
-[notebooks/train_floraguard.ipynb](./notebooks/train_floraguard.ipynb). It
-orchestrates the same scripts, including validation, split, training, evaluation
-review, activation, smoke testing, and optional Colab artifact download; it
-does not contain sample data or a duplicate model implementation.
-
-## CPU, GPU, and Google Colab
-
-CPU training is supported and no NVIDIA hardware, CUDA, or GPU packages are
-required. Check the devices visible to the active TensorFlow environment with:
-
-```powershell
-python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
-```
-
-An empty list means TensorFlow will use the CPU. Native Windows TensorFlow 2.11
-and newer does not provide NVIDIA CUDA GPU support; do not install CUDA to fix
-an empty list. If local CPU training is too slow, Google Colab is an option:
-clone or upload this AI/data project, place the real dataset and manifest in
-its expected layout, select a GPU runtime if desired, install
-`requirements.txt`, and run the same validation, split, and training commands.
-The scripts use project/data paths and command-line options rather than
-machine-specific `G:\` or `C:\` paths. Save the trained model and evaluation
-artifacts somewhere persistent before the Colab runtime ends.
-
-## Backend handoff
-
-See [AI_INTEGRATION.md](./AI_INTEGRATION.md) for the simple predictor function
-and response contract. Area-level risk calculation remains outside this AI
-component.
+Update `AREA_NAME` and `MAP_CENTER` in `src/config.js` for the deployment. Map data intentionally uses coarse zone-level areas and does not display farm names or precise farm locations.
